@@ -1,4 +1,6 @@
-# How to setup the project enviornment
+# How to setup the managed enviornment
+
+(note: you don't have to use the managed enviornment, it just means less install/setup errors)
 
 ### For Windows
 
