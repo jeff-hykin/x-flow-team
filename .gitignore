@@ -15,6 +15,7 @@
 .nix-defexpr
 .nix-profile
 .npmrc
+Library/Caches/pip/
 
 # 
 # Linux
@@ -293,7 +294,6 @@ typings/
 __pycache__/
 *.py[cod]
 *$py.class
-*.pickle
 
 # C extensions
 *.so
@@ -586,6 +586,3 @@ dkms.conf
 
 # Executables
 *.out
-
-# this next line was auto-added, comment it out if dont want it to be ignored 
-Library/
