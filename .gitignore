@@ -10,12 +10,15 @@
 .bash_history
 .zcompdump*
 .gitconfig
-.local
-.cache
-.nix-defexpr
-.nix-profile
 .npmrc
+.local/
+.cache/
+.nix-defexpr/
+.nix-profile/
 Library/Caches/pip/
+Library/Jupyter/
+.jupyter/
+.matplotlib/
 
 # 
 # Linux
