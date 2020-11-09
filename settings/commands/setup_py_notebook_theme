@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-jt -t onedork -fs 95 -altp -tfs 11 -nfs 115 -cellw 88% -T
+jt -t onedork -fs 125 -altp -tfs 15 -nfs 125 -cellw 88% -T
