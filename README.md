@@ -1,10 +1,4 @@
-## How to setup (The not-recommended-way)
-* install python3
-* install the pip modules in `requirements.txt`
-* add the project directory to your `PYTHONPATH` env variable
-* look at files in `./settings/commands/` to see actions for the project
-
-# How to setup (Prefered way)
+# How to setup the project enviornment
 
 ### For Windows
 
@@ -35,3 +29,9 @@
     * run `nix-shell` to get into the project enviornment
         * Note: this will almost certainly take a while the first time because it will auto-install exact versions of everything: `python`, `pip`, the python virtual enviornment, all of the pip modules, and auto-setup the env variables like the PYTHONPATH.
     * run `commands` to see all of the project commands
+
+## Manual project setup
+* install python3
+* install the pip modules in `requirements.txt`
+* add the project directory to your `PYTHONPATH` env variable
+* look at files in `./settings/commands/` to see actions for the project
