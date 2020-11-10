@@ -57,7 +57,7 @@ def visualizeFeatures(name, df_from_csv):
         image = img_as_float(image_file)[shrink]
         # makes dataframe row with filename and image features, and flattens each feature
         gabor_data.append([i] + list(np.array(gabor_feature(image)).flatten()))
-        # hog_data.append([i] + list(np.array(hog_feature(image)).flatten()))
+        hog_data.append([i] + list(np.array(hog_feature(image)).flatten()))
     # make dataframes and then calculate evaluation metrics
     df_gabor = pd.DataFrame(gabor_data)
     df_gabor_classified = df_gabor.merge(
