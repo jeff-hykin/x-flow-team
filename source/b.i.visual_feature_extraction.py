@@ -1,6 +1,10 @@
 from skimage.feature import hog
 from skimage import data, exposure
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy import ndimage as ndi
+from skimage.util import img_as_float
+from skimage.filters import gabor_kernel
 
 def hog_feature(image):
     """
@@ -35,3 +39,72 @@ def visualize(original_image, hog_image):
     ax2.set_title('Histogram of Oriented Gradients')
 
     plt.show()
+    
+def gabor_feature(image):
+    '''
+    image: the 2D image array
+    
+    Extract 40 Gabor features, 8 different direction and 5 different frequency
+    '''
+    results = []
+    kernel_params = []
+    # 8 direction
+    for theta in range(8):
+        theta = theta / 4. * np.pi
+        # 5 frequency
+        for frequency in range(1,10,2):
+            frequency = frequency * 0.1
+            kernel = gabor_kernel(frequency, theta=theta)
+            params = 'theta=%d,\nfrequency=%.2f' % (theta * 180 / np.pi, frequency)
+            kernel_params.append(params)
+            # Save kernel and the power image for each image
+            results.append((kernel, power(image, kernel)))
+    gabor_plot(kernel_params, results, image)
+    return results
+
+def power(image, kernel):
+    # Normalize images for better comparison.
+    image = (image - image.mean()) / image.std()
+    # Using the mod of real part and imag part of image after gabor filter
+    return np.sqrt(ndi.convolve(image, np.real(kernel), mode='wrap')**2 +
+                   ndi.convolve(image, np.imag(kernel), mode='wrap')**2)
+
+def gabor_plot(kernel_params, results, image):
+    '''
+    kernel_params: the title of kernel
+    results: (kernel, power) the Gabor kernel and the image feature
+    image: original 2D image array
+    '''
+    fig, axes = plt.subplots(nrows=11, ncols=8, figsize=(55, 40))
+    plt.gray()
+    fig.suptitle('Image responses for Gabor filter kernels', fontsize=12)
+    # Plot original image
+    ax = axes[0][0] 
+    ax.imshow(image)
+    ax.set_title('original image', fontsize=8)
+    for i in range(8):
+        axes[0][i].axis('off')
+
+    for i in range(1, 10, 2):
+        for j in range(8):
+            # Plot Gabor kernel
+            ax = axes[i][j]
+            # shape of results and kernel_params are both (40,)
+            kernel = results[i//2 + 5*j][0]
+            ax.imshow(np.real(kernel))
+            ax.set_title(kernel_params[i//2 + 5*j])
+            ax.set_xticks([])
+            ax.set_yticks([])
+
+            # Plot Gabor responses with the contrast normalized for each filter
+            ax = axes[i+1][j]
+            power = results[i//2 + 5*j][1]
+            ax.imshow(power)
+            ax.axis('off')
+    plt.show()
+ 
+if __name__=="__main__":
+    shrink = (slice(0, None, 3), slice(0, None, 3))
+    brick = img_as_float(data.brick())[shrink]
+    # a single test of Gabor Extraction
+    gabor_feature(brick)
