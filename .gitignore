@@ -15,7 +15,7 @@
 .cache
 .nix-defexpr
 .nix-profile
-Library/Caches/pip
+Library/Caches
 Library/Jupyter
 .jupyter
 .matplotlib
