@@ -25,8 +25,10 @@ let
             config = packageJson.nix.config;
         };
         # 
-        # reorganize the list of packages into a list like:
-        #    [ { name: "blah", commitHash:"blah", source: (*an object*) }, ... ]
+        # reorganize the list of packages from:
+        #    [ { load: "blah", from:"blah-hash" }, ... ]
+        # into a list like:
+        #    [ { name: "blah", commitHash:"blah-hash", source: (*an object*) }, ... ]
         # 
         packagesWithSources = builtins.map (
             each: ({
@@ -43,7 +45,44 @@ let
         ) packageJson.nix.packages;
     };
     
-    packagesForPython = [] ++ definitions.mainPackages.lib.optionals (definitions.mainPackages.stdenv.isDarwin) [
+    # TODO: add support for the package.json to have nested packages
+    nestedPackages = [
+        # 
+        # this is just a list of all of the standard unix tools
+        # 
+        definitions.mainPackages.unixtools.arp         # depends on openssl_1_0_2     
+        definitions.mainPackages.unixtools.ifconfig    # depends on openssl_1_0_2         
+        definitions.mainPackages.unixtools.netstat     # depends on openssl_1_0_2         
+        definitions.mainPackages.unixtools.ping        # depends on openssl_1_0_2     
+        definitions.mainPackages.unixtools.route       # depends on openssl_1_0_2         
+        # definitions.mainPackages.unixtools.logger # fail on macos
+        # definitions.mainPackages.unixtools.wall   # fail on macos
+        definitions.mainPackages.unixtools.col
+        definitions.mainPackages.unixtools.column
+        definitions.mainPackages.unixtools.fdisk
+        definitions.mainPackages.unixtools.fsck
+        definitions.mainPackages.unixtools.getconf
+        definitions.mainPackages.unixtools.getent
+        definitions.mainPackages.unixtools.getopt
+        definitions.mainPackages.unixtools.hexdump
+        definitions.mainPackages.unixtools.hostname
+        definitions.mainPackages.unixtools.killall
+        definitions.mainPackages.unixtools.locale
+        definitions.mainPackages.unixtools.more
+        definitions.mainPackages.unixtools.mount
+        definitions.mainPackages.unixtools.ps
+        definitions.mainPackages.unixtools.quota
+        definitions.mainPackages.unixtools.script
+        definitions.mainPackages.unixtools.sysctl
+        definitions.mainPackages.unixtools.top
+        definitions.mainPackages.unixtools.umount
+        definitions.mainPackages.unixtools.whereis
+        definitions.mainPackages.unixtools.write
+        definitions.mainPackages.unixtools.xxd
+    ];
+    
+    # TODO: add support for the package.json to have OS-specific packages (if statement inside package inclusion)
+    packagesForMacOnly = [] ++ definitions.mainPackages.lib.optionals (definitions.mainPackages.stdenv.isDarwin) [
         # python and venv
         definitions.mainPackages.python37
         definitions.mainPackages.python37Packages.setuptools
@@ -55,12 +94,13 @@ in
     # create a shell
     definitions.mainPackages.mkShell {
         # inside that shell, make sure to use these packages
-        buildInputs = packagesForPython ++ builtins.map (each: each.source) definitions.packagesWithSources;
+        buildInputs = nestedPackages ++ packagesForMacOnly ++ builtins.map (each: each.source) definitions.packagesWithSources;
         
         # run some bash code before starting up the shell
         shellHook = ''
+        export new_home="settings/home"
         # we don't want to give nix or other apps our home folder
-        if [[ "$HOME" != "$(pwd)" ]] 
+        if [[ "$HOME" != "$(pwd)/$new_home" ]] 
         then
             #
             # find and run all the startup scripts in alphabetical order
@@ -68,16 +108,16 @@ in
             for file in ./settings/shell_startup/#pre_changing_home/*
             do
                 # make sure its a file
-                if [[ -f $file ]]; then
-                    source $file
+                if [[ -f "$file" ]]; then
+                    source "$file"
                 fi
             done
             
-            mkdir -p .cache/
-            ln -s "$HOME/.cache/nix" "./.cache/" &>/dev/null
+            mkdir -p "$new_home/.cache/"
+            ln -s "$HOME/.cache/nix" "$new_home/.cache/" &>/dev/null
             
             # so make the home folder the same as the project folder
-            export HOME="$(pwd)"
+            export HOME="$(pwd)/$new_home"
             # make it explicit which nixpkgs we're using
             export NIX_PATH="nixpkgs=${definitions.mainRepo}:."
             
