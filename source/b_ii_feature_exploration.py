@@ -97,14 +97,14 @@ def conditional_entropy_metric(df_classified, title, to_drop=[0, 'filename', 'co
     """
     calc_cond_entropy = SelectKBest(score_func=mutual_info_classif, k=4)
     
-    # normalization of entropy of all features in each sample
-    entropy_data = df_classified.drop(to_drop, axis=1).values
-    mean_entropy_data = np.mean(entropy_data, axis=1)
-    mean_entropy_data = np.expand_dims(mean_entropy_data, axis=1)
-    entropy_data = entropy_data - mean_entropy_data
+    # normalization of features in each sample
+    feature_data = df_classified.drop(to_drop, axis=1).values
+    mean_feature_data = np.mean(feature_data, axis=1)
+    mean_feature_data = np.expand_dims(mean_feature_data, axis=1)
+    feature_data = feature_data - mean_feature_data
     label = df_classified[['covid(label)']].values.ravel()
 
-    df_cond_entropy = calc_cond_entropy.fit(entropy_data, label)
+    df_cond_entropy = calc_cond_entropy.fit(feature_data, label)
 #     df_cond_entropy = calc_cond_entropy.fit(df_classified.drop(
 #         to_drop, axis=1), df_classified[['covid(label)']].values.ravel())
     print(df_cond_entropy.scores_)
