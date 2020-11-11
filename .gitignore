@@ -11,14 +11,15 @@
 .zcompdump*
 .gitconfig
 .npmrc
-.local/
-.cache/
-.nix-defexpr/
-.nix-profile/
-Library/Caches/pip/
-Library/Jupyter/
-.jupyter/
-.matplotlib/
+.local
+.cache
+.nix-defexpr
+.nix-profile
+Library/Caches/pip
+Library/Jupyter
+.jupyter
+.matplotlib
+.ipython
 
 # 
 # Linux
