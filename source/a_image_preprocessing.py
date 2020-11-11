@@ -16,7 +16,7 @@ def crop_resize(name, target):
         # shape like (1024,1007,3)
         size = image.shape
         if size[0] == size[1]:
-            continue
+            crop = image
         elif size[0] > size[1]:
             center = size[0] // 2
             half = size[1] // 2
