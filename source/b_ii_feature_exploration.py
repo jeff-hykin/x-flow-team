@@ -99,11 +99,20 @@ def conditional_entropy_metric(df_classified, title, to_drop=[0, 'filename', 'co
     df_cond_entropy = calc_cond_entropy.fit(df_classified.drop(
         to_drop, axis=1), df_classified[['covid(label)']].values.ravel())
     print(df_cond_entropy.scores_)
+    plt.figure()
     plt.scatter(df_classified.drop(
         to_drop, axis=1).columns, df_cond_entropy.scores_, alpha=0.3)
     plt.xlabel("Feature")
     plt.ylabel("cond_entropy")
     plt.title(title)
+    plt.show()
+    
+    # show the conditional entropy as an image matrix
+    length = int(np.sqrt(df_cond_entropy.scores_.shape[0]))
+    tem = np.reshape(df_cond_entropy.scores_, (length, length))
+    plt.figure()
+    plt.imshow(tem, cmap=plt.cm.gray)
+    plt.title(title + "as image")
     plt.show()
 
 
