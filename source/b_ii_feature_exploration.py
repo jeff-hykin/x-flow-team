@@ -93,11 +93,20 @@ def chi2_metric(df_classified, title):
 def conditional_entropy_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)']):
     """
     Calculates cond_entropy score of each feature with respect to the covid labels
-    Plots results in a scatter plot
+    Plots results in a scatter plot and image matrix of entropy
     """
     calc_cond_entropy = SelectKBest(score_func=mutual_info_classif, k=4)
-    df_cond_entropy = calc_cond_entropy.fit(df_classified.drop(
-        to_drop, axis=1), df_classified[['covid(label)']].values.ravel())
+    
+    # normalization of entropy of all features in each sample
+    entropy_data = df_classified.drop(to_drop, axis=1).values
+    mean_entropy_data = np.mean(entropy_data, axis=1)
+    mean_entropy_data = np.expand_dims(mean_entropy_data, axis=1)
+    entropy_data = entropy_data - mean_entropy_data
+    label = df_classified[['covid(label)']].values.ravel()
+
+    df_cond_entropy = calc_cond_entropy.fit(entropy_data, label)
+#     df_cond_entropy = calc_cond_entropy.fit(df_classified.drop(
+#         to_drop, axis=1), df_classified[['covid(label)']].values.ravel())
     print(df_cond_entropy.scores_)
     plt.figure()
     plt.scatter(df_classified.drop(
