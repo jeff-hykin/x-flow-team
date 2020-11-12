@@ -1,6 +1,61 @@
-import math
-import json
 from collections import Counter # frequency count
+from csv import reader
+from scipy import ndimage as ndi
+from skimage import data, exposure
+from skimage.filters import gabor_kernel
+from skimage.util import img_as_float
+from sklearn.feature_selection import chi2
+from sklearn.feature_selection import mutual_info_classif
+from sklearn.feature_selection import SelectKBest
+import cv2
+import json
+import math
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import pandas as pd
+import sys
+
+relative_path = lambda *filepath_peices : os.path.join(os.path.dirname(__file__), *filepath_peices)
+
+data = ()
+def get_train_test():
+    """
+    returns train_features, train_labels, test_features
+    They're dataframes
+    Also the train_features["images"] are the list of images
+    """
+    global data
+    # if data hasn't been loaded
+    if len(data) == 0:
+        # 
+        # Train data
+        # 
+        # filename, gender, age, location, covid(label)
+        training_df = pd.read_csv(os.path.join(sys.path[0], 'train.csv')).fillna(0)
+        training_labels = training_df["covid(label)"]
+        training_inputs = training_df.drop("covid(label)", axis="columns")
+        training_inputs["images"] = training_inputs["filenames"].transform(
+            # convert to grayscale because they're basically already grayscale
+            lambda each_filename: cv2.cvtColor(cv2.imread(relative_path("train", each_filename), 0), cv2.COLOR_BGR2GRAY)
+        )
+        training_inputs = training_inputs.drop("filenames", axis="columns")
+        
+        # 
+        # Test Data
+        # 
+        # filename, gender, age, location
+        test_inputs = pd.read_csv(os.path.join(sys.path[0], 'test.csv')).fillna(0)
+        # test_labels = None, yup no testing labels
+        test_inputs["images"] = test_inputs["filenames"].transform(
+            # convert to grayscale because they're basically already grayscale
+            lambda each_filename: cv2.cvtColor(cv2.imread(relative_path("test", each_filename), 0), cv2.COLOR_BGR2GRAY)
+        )
+        test_inputs = training_inputs.drop("filenames", axis="columns")
+        
+        data = (training_inputs, training_labels, test_inputs)
+    
+    return data
 
 def conditional_entropy(feature_data, labels):
     if type(feature_data) == dict:
@@ -35,3 +90,12 @@ def conditional_entropy(feature_data, labels):
         conditional_entropy[each_feature] = not_usefulness
     
     return conditional_entropy
+
+
+
+train_features, train_labels, test_features = get_train_test()
+
+plt.figure()
+plt.imshow(train_features["images"][0], cmap=plt.cm.gray)
+plt.title("image")
+plt.show()
