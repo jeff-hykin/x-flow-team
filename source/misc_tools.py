@@ -35,11 +35,11 @@ def get_train_test():
         training_df = pd.read_csv(os.path.join(sys.path[0], 'train.csv')).fillna(0)
         training_labels = training_df["covid(label)"]
         training_inputs = training_df.drop("covid(label)", axis="columns")
-        training_inputs["images"] = training_inputs["filenames"].transform(
+        training_inputs["images"] = training_inputs["filename"].transform(
             # convert to grayscale because they're basically already grayscale
-            lambda each_filename: cv2.cvtColor(cv2.imread(relative_path("train", each_filename), 0), cv2.COLOR_BGR2GRAY)
+            lambda each_filename: cv2.imread(relative_path("train", each_filename), 0)
         )
-        training_inputs = training_inputs.drop("filenames", axis="columns")
+        training_inputs = training_inputs.drop("filename", axis="columns")
         
         # 
         # Test Data
@@ -47,11 +47,11 @@ def get_train_test():
         # filename, gender, age, location
         test_inputs = pd.read_csv(os.path.join(sys.path[0], 'test.csv')).fillna(0)
         # test_labels = None, yup no testing labels
-        test_inputs["images"] = test_inputs["filenames"].transform(
+        test_inputs["images"] = test_inputs["filename"].transform(
             # convert to grayscale because they're basically already grayscale
-            lambda each_filename: cv2.cvtColor(cv2.imread(relative_path("test", each_filename), 0), cv2.COLOR_BGR2GRAY)
+            lambda each_filename: cv2.imread(relative_path("test", each_filename), 0)
         )
-        test_inputs = training_inputs.drop("filenames", axis="columns")
+        test_inputs = test_inputs.drop("filename", axis="columns")
         
         data = (training_inputs, training_labels, test_inputs)
     
@@ -90,12 +90,3 @@ def conditional_entropy(feature_data, labels):
         conditional_entropy[each_feature] = not_usefulness
     
     return conditional_entropy
-
-
-
-train_features, train_labels, test_features = get_train_test()
-
-plt.figure()
-plt.imshow(train_features["images"][0], cmap=plt.cm.gray)
-plt.title("image")
-plt.show()
