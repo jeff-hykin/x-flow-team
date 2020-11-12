@@ -132,4 +132,4 @@ if __name__ == "__main__":
     one_hot_csv = pd.get_dummies(df_from_csv, columns=['gender', 'location'])
     print("Plotted csv information with conditional entropy")
     conditional_entropy_metric(one_hot_csv, "CSV Information", ['filename', 'covid(label)'])
-    visualizeFeatures("new_train448", df_from_csv)
+    visualizeFeatures("new_train100", df_from_csv)
