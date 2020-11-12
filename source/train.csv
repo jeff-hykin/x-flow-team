@@ -1,0 +1,251 @@
+filename,gender,age,location,covid(label)
+img_0.jpeg,F,70,"Valencia, Spain",1
+img_1.jpeg,F,30,"University of California Irvine, Orange, California, United States",1
+img_10.jpg,F,40,"Cairo, Egypt",0
+img_100.png,M,44,"Wuhan, China",1
+img_101.jpg,F,,"Hannover Medical School, Hannover, Germany",1
+img_102.jpg,F,40,"Edinburgh, United Kingdom",0
+img_103.png,,,,1
+img_104.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_105.jpg,,,,1
+img_106.jpg,M,26,,0
+img_107.png,M,50,"Melbourne, Australia",0
+img_108.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_109.jpg,M,64,,1
+img_11.jpg,,,"Alexandria, Egypt",0
+img_110.jpg,F,50,"Adelaide, Australia",0
+img_111.png,M,44,"Wuhan, China",1
+img_112.jpg,F,72,"Hospital Universitario Doctor Peset, Valencia, Spain",1
+img_113.jpg,F,74,"Complejo Hospitalario de Navarra, Pamplona, Spain",1
+img_114.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_115.jpg,M,25,"Hospital Universitario Severo Ochoa, Madrid, Spain",1
+img_116.jpg,M,44,"San Lazaro Hospital, Manila, Philippines",1
+img_117.jpg,M,44,"San Lazaro Hospital, Manila, Philippines",1
+img_118.jpg,F,40,"Edinburgh, United Kingdom",0
+img_119.png,,,,1
+img_12.jpeg,M,18,"Netanya, Israel",0
+img_120.jpg,,,"Alexandria, Egypt",0
+img_121.jpg,F,62,Australia,0
+img_122.jpg,,,,1
+img_123.jpg,M,58,,1
+img_124.jpeg,F,53,"Jinling Hospital, Medical School of Nanjing University, Nanjing, Jiangsu, China",1
+img_125.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_126.jpg,F,40,"Edinburgh, United Kingdom",0
+img_127.jpg,F,25,"Thanh Hóa, Vietnam",1
+img_128.png,M,33,"Hospital Universitari Vall d'Hebrón, Barcelona, Spain",0
+img_129.jpeg,F,50,"Kedah, Malaysia",0
+img_13.jpg,F,,"Hannover Medical School, Hannover, Germany",1
+img_130.png,,,Taiwan,1
+img_131.png,F,78,"Tokyo, Japan",1
+img_132.png,,,,1
+img_133.jpeg,F,71,Italy,1
+img_134.png,F,78,"Tokyo, Japan",1
+img_135.jpg,F,64,Portugal,0
+img_136.jpg,F,45,"Melbourne, Australia",0
+img_137.jpg,M,,"Hannover Medical School, Hannover, Germany",0
+img_138.jpg,F,,"Hannover Medical School, Hannover, Germany",1
+img_139.png,F,,"The Royal Melbourne Hospital, Melbourne, Australia",1
+img_14.jpg,F,,"Hannover Medical School, Hannover, Germany",0
+img_140.jpeg,M,58,"Melbourne, Australia",0
+img_141.jpg,F,,"Hannover Medical School, Hannover, Germany",1
+img_142.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_143.jpeg,M,67,Italy,1
+img_144.jpeg,M,35,"Melbourne, Australia",0
+img_145.png,,,Taiwan,1
+img_146.jpg,M,34,,0
+img_147.jpg,F,50,China,1
+img_148.png,,,,1
+img_149.jpg,F,,"Hannover Medical School, Hannover, Germany",1
+img_15.jpeg,M,62,Italy,1
+img_150.jpeg,F,71,Italy,1
+img_151.jpg,M,70,Spain,1
+img_152.jpeg,F,50,"Kedah, Malaysia",0
+img_153.jpg,F,45,"Melbourne, Australia",0
+img_154.jpeg,M,65,United Kingdom,0
+img_155.jpg,F,29,"Hospital Universitario, Madrid, Spain",1
+img_156.png,M,75,Spain,1
+img_157.jpg,M,58,,1
+img_158.jpeg,F,55,Italy,1
+img_159.jpeg,M,64,Italy,1
+img_16.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_160.png,F,78,"Tokyo, Japan",0
+img_161.jpg,F,40,"Jiangxi Provincial People's Hospital, Nanchang, China",1
+img_162.jpeg,M,60,Italy,1
+img_163.jpg,M,75,Australia,0
+img_164.png,M,75,"Barcelona, Spain ",1
+img_165.png,M,25,Argentina,0
+img_166.png,,,,1
+img_167.jpeg,M,65,Italy,1
+img_168.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_169.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_17.jpg,M,,,0
+img_170.jpg,M,46,"Milan, Italy",0
+img_171.jpg,F,45,"Melbourne, Australia",0
+img_172.jpg,M,50,United Kingdom,0
+img_173.jpeg,M,35,"Snohomish County, Washington, United States",1
+img_174.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_175.png,M,52,China,1
+img_176.jpg,M,,"Jonkoping, Sweden",1
+img_177.jpeg,M,,Hong Kong,1
+img_178.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_179.jpg,F,67,"Hospital of Wuhan University, Wuhan, China",1
+img_18.jpg,F,64,Portugal,0
+img_180.jpg,M,46,"Milan, Italy",0
+img_181.jpg,F,,"Hannover Medical School, Hannover, Germany",1
+img_182.jpeg,M,,Italy,1
+img_183.png,M,68,United Kingdom,1
+img_184.jpeg,M,73,Italy,1
+img_185.jpg,F,67,,0
+img_186.png,,,,1
+img_187.jpeg,M,68,Italy,1
+img_188.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_189.jpg,M,45,"Milan, Italy",0
+img_19.jpg,M,60,"Moscow, Russia ",0
+img_190.jpg,M,,"Hannover Medical School, Hannover, Germany",0
+img_191.jpg,M,73,,1
+img_192.jpg,M,,"Hannover Medical School, Hannover, Germany",0
+img_193.jpg,F,,"Hannover Medical School, Hannover, Germany",1
+img_194.jpeg,M,44,,1
+img_195.jpg,F,23,"Prince of Wales Hospital, Chinese University of Hong Kong, China",0
+img_196.png,M,40,"Melbourne, Australia",0
+img_197.jpg,M,55,"Melbourne, Australia",0
+img_198.jpg,M,76,"Valencia, Spain",0
+img_199.jpg,F,54,Malta,0
+img_2.jpg,F,,"Hannover Medical School, Hannover, Germany",0
+img_20.jpg,M,45,"Milan, Italy",0
+img_200.jpg,M,61,,1
+img_201.png,,,,1
+img_202.png,M,45,Australia,0
+img_203.jpeg,F,52,"Changhua Christian Hospital, Changhua City, Taiwan ",1
+img_204.jpg,F,40,"Edinburgh, United Kingdom",0
+img_205.png,F,35,,0
+img_206.jpg,M,28,"Murcia, Spain",0
+img_207.jpeg,M,35,"Snohomish County, Washington, United States",1
+img_208.jpeg,M,71,Italy,1
+img_209.jpeg,M,,Hong Kong,1
+img_21.jpg,M,20,United Kingdom,1
+img_210.jpeg,M,90,"Melbourne, Australia",0
+img_211.jpeg,M,65,"Cho Ray Hospital, Ho Chi Minh City, Vietnam",1
+img_212.jpg,M,23,"Prince of Wales Hospital, Chinese University of Hong Kong, China",0
+img_213.jpeg,F,25,"Calgary, Canada",0
+img_214.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_215.jpeg,F,70,"Valencia, Spain",1
+img_216.jpg,M,30,,0
+img_217.jpg,F,40,"Edinburgh, United Kingdom",0
+img_218.png,F,56,Thailand,1
+img_219.jpg,F,23,"Prince of Wales Hospital, Chinese University of Hong Kong, China",0
+img_22.jpg,M,60,Spain,1
+img_220.png,M,60,"Melbourne, Australia",0
+img_221.jpg,F,25,"Melbourne, Australia",0
+img_222.jpg,M,45,Italy,1
+img_223.jpg,M,65,"Tabriz, Iran",1
+img_224.jpg,M,46,"Milan, Italy",0
+img_225.jpeg,F,75,"Santa Rosa, Brazil",0
+img_226.jpg,F,46,Taiwan,1
+img_227.jpeg,M,47,Italy,1
+img_228.jpeg,M,27,Italy,1
+img_229.jpg,M,76,"Prince of Wales Hospital, Chinese University of Hong Kong, China",0
+img_23.jpg,M,52,"Valencia, Spain",0
+img_230.png,F,,"The Royal Melbourne Hospital, Melbourne, Australia",1
+img_231.JPG,F,30,"Tabriz, Iran",1
+img_232.png,,,Taiwan,1
+img_233.jpg,M,,"Hannover Medical School, Hannover, Germany",0
+img_234.jpg,F,53,Greece,0
+img_235.png,M,40,"Zigong, China",1
+img_236.jpeg,F,45,"Glasgow, United Kingdom",0
+img_237.jpg,M,,"Hannover Medical School, Hannover, Germany",0
+img_238.jpg,M,46,"Milan, Italy",0
+img_239.jpeg,F,40,"Abha, Saudi Arabia",0
+img_24.jpg,M,,"Hannover Medical School, Hannover, Germany",0
+img_240.jpg,M,73,,1
+img_241.png,M,45,Turkey,1
+img_242.jpg,F,45,"Melbourne, Australia",0
+img_243.jpg,M,50,Malta,0
+img_244.jpg,F,30,"Adelaide, Australia ",0
+img_245.jpg,F,46,Taiwan,1
+img_246.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_247.jpg,M,55,"Milan, Italy",0
+img_248.jpg,F,,"Hannover Medical School, Hannover, Germany",1
+img_249.jpg,F,71,"Barcelona, Spain ",0
+img_25.png,F,64,Italy,1
+img_26.png,F,49,Italy,1
+img_27.jpg,F,55,Malta,0
+img_28.jpg,F,,"Hannover Medical School, Hannover, Germany",1
+img_29.jpg,F,40,"Cairo, Egypt",0
+img_3.jpg,M,60,Spain,1
+img_30.png,F,39,Italy,1
+img_31.jpg,,,"Alexandria, Egypt",0
+img_32.jpg,F,40,"Melbourne, Australia",0
+img_33.png,,,,0
+img_34.jpg,F,72,"Hospital Universitario Doctor Peset, Valencia, Spain",1
+img_35.jpg,M,52,"Valencia, Spain",0
+img_36.jpg,M,34,,0
+img_37.jpeg,F,52,"Changhua Christian Hospital, Changhua City, Taiwan ",1
+img_38.png,F,39,Italy,1
+img_39.jpg,,,"Alexandria, Egypt",0
+img_4.jpeg,F,25,"Tehran, Iran",1
+img_40.jpg,M,55,"Tehran, Iran",1
+img_41.png,F,46,Italy,1
+img_42.png,M,51,"Wuhan, China",1
+img_43.png,M,49,"New Brunswick, New Jersey, United States",1
+img_44.jpg,M,83,,1
+img_45.png,,43,"Humanitas Clinical and Research Hospital, Rozzano, Milan, Italy",0
+img_46.jpg,F,35,"Melbourne, Australia",0
+img_47.png,F,70,"Ospedale Santo Spirito. Rome, Italy",1
+img_48.jpg,F,,"Hannover Medical School, Hannover, Germany",1
+img_49.jpg,F,64,Portugal,0
+img_5.jpg,M,,"Hannover Medical School, Hannover, Germany",0
+img_50.jpg,M,74,Greece,0
+img_51.png,M,74,"Nagoya, Japan",1
+img_52.jpg,M,52,"Valencia, Spain",0
+img_53.jpeg,M,65,"Cho Ray Hospital, Ho Chi Minh City, Vietnam",1
+img_54.jpg,M,45,"Milan, Italy",0
+img_55.jpg,M,34,"Ospedale di Cattinara, Trieste, Italy",1
+img_56.jpeg,M,60,"Nottingham, United Kingdom ",1
+img_57.jpg,,,"Alexandria, Egypt",0
+img_58.jpg,M,20,United Kingdom,1
+img_59.jpg,M,73,,1
+img_6.jpg,F,40,"Cairo, Egypt",0
+img_60.jpg,F,72,"Hospital Universitario Doctor Peset, Valencia, Spain",1
+img_61.jpeg,M,18,"Netanya, Israel",0
+img_62.png,M,81,"Wuhan, China",1
+img_63.jpg,M,48,"Hospital Hollabrunn, Hollabrunn, Austria",1
+img_64.png,M,33,"Hospital Universitari Vall d'Hebrón, Barcelona, Spain",0
+img_65.jpg,M,80,"Rome, Italy",0
+img_66.png,M,71,"Shanghai, China",1
+img_67.jpg,M,,"Edinburgh, United Kingdom",0
+img_68.jpeg,M,30,"Doha, Qatar",1
+img_69.jpg,M,75,"Riccione, Italy ",1
+img_7.png,M,75,"Barcelona, Spain ",1
+img_70.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_71.png,F,39,"Humanitas Clinical and Research Hospital, Rozzano, Milan, Italy",0
+img_72.jpg,M,20,United Kingdom,1
+img_73.jpeg,M,,Hong Kong,1
+img_74.jpg,F,72,"Hospital Universitario Doctor Peset, Valencia, Spain",1
+img_75.jpg,F,70,Spain,1
+img_76.jpeg,F,35,United Kingdom,0
+img_77.jpg,F,,"Hannover Medical School, Hannover, Germany",0
+img_78.jpg,F,40,"Edinburgh, United Kingdom",0
+img_79.jpg,M,52,"Hospital de São José, Portugal",0
+img_8.jpeg,M,67,Italy,1
+img_80.jpg,,,"Wuhan Jinyintan Hospital, Wuhan, Hubei Province, China",1
+img_81.png,,75,"Teruel, Spain",1
+img_82.jpeg,M,42,"Tongji Medical College, Wuhan, Hubei Province, China",1
+img_83.jpg,M,,"Hannover Medical School, Hannover, Germany",0
+img_84.jpg,M,50,"Melbourne, Australia",0
+img_85.jpeg,M,84,,1
+img_86.jpeg,M,40,"Doha, Qatar",1
+img_87.jpg,M,75,"Riccione, Italy ",1
+img_88.jpg,M,52,"Valencia, Spain",0
+img_89.jpg,F,72,"Hospital Universitario Doctor Peset, Valencia, Spain",1
+img_9.jpg,F,55,Malta,0
+img_90.jpg,F,74,"Complejo Hospitalario de Navarra, Pamplona, Spain",1
+img_91.jpeg,F,69,Italy,1
+img_92.jpg,F,70,Spain,1
+img_93.jpg,M,,"Hannover Medical School, Hannover, Germany",1
+img_94.jpg,M,50,Spain,1
+img_95.jpg,,,"Wuhan Jinyintan Hospital, Wuhan, Hubei Province, China",1
+img_96.jpeg,M,65,"Cho Ray Hospital, Ho Chi Minh City, Vietnam",1
+img_97.png,M,60,"Melbourne, Australia",0
+img_98.jpeg,M,70,"Kabul, Afghanistan",0
+img_99.png,,46,"Humanitas Clinical and Research Hospital, Rozzano, Milan, Italy",1
