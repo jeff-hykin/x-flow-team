@@ -72,9 +72,6 @@ def visualizeFeatures(name, df_from_csv):
     print("Dataframe with HoG features and classification")
     print(df_hog_classified.head())
     conditional_entropy_metric(df_hog_classified, "HoG Metrics")
-    # added return for use in b_iii - Feras 
-    return df_hog_classified
-
 
 def chi2_metric(df_classified, title):
     """
