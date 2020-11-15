@@ -9,34 +9,76 @@ from skimage.util import img_as_float
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 
-from misc_tools import get_train_test
+from mlxtend.feature_selection import SequentialFeatureSelector as SFS
+from sklearn.neighbors import KNeighborsClassifier as KNN
+
+from misc_tools import split_data
 from b_i_visual_feature_extraction import hog_feature, create_feature_df
 
 
-def sequential_forward_selection(train_inputs, train_labels, features, num_tests):
-	# split data into num_tests sets
-	input_list, label_list = split_data(train_inputs, train_labels, num_tests)
+def sequential_forward_selection(data, num_tests, feature_counts):
+	'''
+	inputs: DataFrame including features and labels ('classes'), 
+					(hyperparam) number of iterations of SFS to be ran,
+					(hyperparam) number of features,
+	output: list of features chosen,
+	'''
+	print('Running SFS...')
+	# split data into features and labels
+	data_labels = data['covid(label)'].copy()
+	data_features = data.copy()
+	data_features = data_features.drop(columns='covid(label)')
 
-	# run sequential forward selection num_tests times
-	# for i in range(num_tests):
+
+	# keep track of best features' accuracies, indicies (of the chosen features) in the DataFrame, and number of features
+	best_features = {'accuracy': 0, 'indicies': [], 'count': 0}
+
+	# test with different numbers of features
+	for nfeat in feature_counts:
 		# sequential forward selection
-	
+		knn = KNN(n_neighbors=3) # n neighbors could be a hyperparameter, but let's keep it to 3
+		sfs = SFS(knn, # estimator to use. RFS also seen
+							k_features=nfeat, # number of features to be chosen
+							forward=True, # SFS, not SBS
+							floating=False,
+							verbose=2,
+							scoring='accuracy', # scored based on accuracy
+							cv=num_tests) # num_tests-fold cross validaton
+		# train
+		sfs = sfs.fit(data_features, data_labels)
 
-	return 1
+		# process results
+		print('CV score for', nfeat, 'features:\n', sfs.k_score_)
+		if sfs.k_score_ > best_features['accuracy']: # update best
+			best_features = {'accuracy': sfs.k_score_, 'indicies': sfs.k_feature_idx_, 'count': nfeat}
+	
+	print('Best SFS features accuracy is', best_features['accuracy'], 'with', best_features['count'], 'features at indicies', best_features['indicies'])
+	return best_features['indicies']
 
 
 # calculate fischer criterion value for feature d
-def fischer_criterion(train_labels, d):
+def fischer_criterion(data, d):
+	'''
+	inputs: DataFrame including features and labels ('classes'),
+					feature 'd',
+	output: fischer criterion score for feature 'd',
+	'''
 	classes = train_labels.ix[:,0].unique() # number of classes
 	for k, _class in enumerate(classes): # for each class
-		average = 
+		average = 1
+	return 1
 
 	
 
-def fischer_criterion_search(train_inputs, train_labels, features, feature_counts):
+def fischer_criterion_search(data, feature_counts):
+	'''
+	inputs: DataFrame including features and labels ('classes'),
+					list with different numbers of features to test with,
+	output: list of features chosen,
+	'''
 	# split training data into validation and training subsets
 	train_ratio = 0.8 # ratio of training size to validation size
-	input_list, label_list = split_data(train_inputs, train_labels, 2, training_ratio)
+	data_split = split_data(data, 2, training_ratio)
 
 	features_and_scores = [] # tuple of feature and score
 	# calculate criterion for each feature
@@ -56,15 +98,15 @@ def fischer_criterion_search(train_inputs, train_labels, features, feature_count
 # main function
 if __name__ == "__main__":
 
-	# loading data and features
-	train_inputs, train_labels, test_inputs = get_train_test()
-	
-	features = [] # TODO: calculate features (46241 featuresss)
+	# loading features df
+	df_hog = create_feature_df(hog_feature, 'new_train100') # 1157 features...
+
+	# hyperparameter for both - list of feature counts to test
+	feature_counts = [15, 25, 35, 40]
 
 	# wrapper feature selection - sequential forward selection for multiple subsets
-	num_tests = 10 # hyperparameter - number of times we run algorithm with subsets of data
-	sequential_forward_selection(train_inputs, train_labels, features, num_tests)
+	num_tests = 10 # hyperparameter - cv folds
+	sequential_forward_selection(df_hog, num_tests, feature_counts)
 
 	# filter feature selection - fischer testing with different feature counts
-	feature_counts = [5, 10, 15, 20, 25] # hyperparameter - list of feature counts to test
-	fischer_criterion_search(train_inputs, train_labels, features, feature_counts)
+	fischer_criterion_search(df_hog, feature_counts)
