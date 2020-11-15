@@ -92,18 +92,20 @@ def conditional_entropy(feature_data, labels):
     return conditional_entropy
 
 # splits train data into multiple subsets
-def split_data(data_inputs, data_labels, num_subsets, ratio=-1):
+# can be used to make train/val split, or for cross validation
+def split_data(data, num_subsets, ratio=-1):
+    '''
+    inputs: DataFrame data,
+            number of subsets to be created,
+            ratio of first subset length to total length,
+    output: array of subsets
+    '''
     # combine inputs and labels, reorder, then seperate again
-    label_title = data_labels.keys()[0]
-    data = pd.append(data_inputs, data_labels)
     data = data.sample(frac=1)
     data = data.reset_index(drop=True)
-    data_inputs = data.drop(columns=label_title)
-    data_labels = data[label_title]
 
-    num_points = len(data_labels[label_title])
-    input_split = []
-    label_split = []
+    num_points = len(data.index)
+    data_split = []
 
     # if ratio is -1, then use even ratios
     if ratio == -1:
@@ -113,16 +115,14 @@ def split_data(data_inputs, data_labels, num_subsets, ratio=-1):
 
         # process cuts
         for a in range(num_subsets-1):
-            input_split.append(data_inputs[start_point:end_point].copy())
-            label_split.append(data_labels[start_point:end_point].copy())
+            data_split.append(data[start_point:end_point].copy())
             start_point = end_point
             end_point += cut_size
 
         # process last cut
         start_point = end_point
         end_point = num_points
-        input_split.append(data_inputs[start_point:end_point].copy())
-        label_split.append(data_labels[start_point:end_point].copy())
+        data_split.append(data[start_point:end_point].copy())
 
     # make first cut ratio size, and rest evenly sized
     else:
@@ -132,22 +132,19 @@ def split_data(data_inputs, data_labels, num_subsets, ratio=-1):
         end_point = first_cut
 
         # process first cut
-        input_split.append(data_inputs[start_point:end_point].copy())
-        label_split.append(data_labels[start_point:end_point].copy())
+        data_split.append(data[start_point:end_point].copy())
 
         
         # process intermediate cuts
         for a in range(1, num_subsets-1):
             start_point = end_point
             end_point += other_cut
-            input_split.append(data_inputs[start_point:end_point].copy())
-            label_split.append(data_labels[start_point:end_point].copy())
+            data_split.append(data[start_point:end_point].copy())
 
         # process last cut
         start_point = end_point
         end_point = num_points
-        input_split.append(data_inputs[start_point:end_point].copy())
-        label_split.append(data_labels[start_point:end_point].copy())
+        data_split.append(data[start_point:end_point].copy())
 
         
-    return (input_split, label_split)
+    return data_split

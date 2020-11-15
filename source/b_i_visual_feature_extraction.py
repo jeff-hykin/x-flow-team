@@ -104,7 +104,9 @@ def gabor_plot(kernel_params, results, image):
     plt.show()
 
 # creates dataframe of features given function and image path
-def create_feature_df(feature_function, image_path):
+def create_feature_df(feature_function, name):
+    image_path = name + '/'
+
     feature_data = []
     for i in os.listdir(image_path):
         image_file = image_path + i
