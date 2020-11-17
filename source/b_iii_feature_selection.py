@@ -17,7 +17,7 @@ from sklearn.model_selection import cross_val_score
 import time
 
 from misc_tools import split_data
-from b_i_visual_feature_extraction import hog_feature, create_feature_df
+from b_ii_feature_exploration import hog_feature, create_feature_df
 
 
 # https://www.codespeedy.com/sequential-forward-selection-with-python-and-scikit-learn/
@@ -155,45 +155,48 @@ def fischer_criterion_selection(data, feature_counts):
 # main function
 if __name__ == "__main__":
 
+	print('Obtaining features...')
+
 	# loading features df
 	df_hog = create_feature_df(hog_feature, 'new_train100') # 1157 features...
+	print(df_hog.head())
 
-	# hyperparameter for both - list of feature counts to test
-	feature_counts = [15, 25, 35, 40]
+	# # hyperparameter for both - list of feature counts to test
+	# feature_counts = [15, 25, 35, 40]
 
 
-	print('Running feature selection algorithms...')
-	# wrapper feature selection - sequential forward selection for multiple subsets
-	num_tests = 10 # hyperparameter - cv folds
-	sfs_features = sequential_forward_selection(df_hog, num_tests, feature_counts)
+	# print('Running feature selection algorithms...')
+	# # wrapper feature selection - sequential forward selection for multiple subsets
+	# num_tests = 10 # hyperparameter - cv folds
+	# sfs_features = sequential_forward_selection(df_hog, num_tests, feature_counts)
 
 	# filter feature selection - fischer testing with different feature counts
-	fc_features = fischer_criterion_selection(df_hog, feature_counts)
+	# fc_features = fischer_criterion_selection(df_hog, feature_counts)
 
-	print('Creating subfeature lists...')
+	# print('Creating subfeature lists...')
 
-	# create DataFrame for SFS feature choices
-	df_sfs_X = pd.DataFrame()
-	if feature in sfs_features:
-		df_sfs_X = df_sfs_X.join(df_hog[feature]) # add to dataframe
+	# # create DataFrame for SFS feature choices
+	# df_sfs_X = pd.DataFrame()
+	# if feature in sfs_features:
+	# 	df_sfs_X = df_sfs_X.join(df_hog[feature]) # add to dataframe
 
-	# create DataFrame for FC feature choices
-	df_fc_X = pd.DataFrame()
-	if feature in fc_features:
-		df_fc_X = df_fc_X.join(df_hog[feature]) # add to dataframe
+	# # create DataFrame for FC feature choices
+	# df_fc_X = pd.DataFrame()
+	# if feature in fc_features:
+	# 	df_fc_X = df_fc_X.join(df_hog[feature]) # add to dataframe
 
-	# create DataFrame for labels
-	df_Y = df_hog['covid(label)'].copy()
+	# # create DataFrame for labels
+	# df_Y = df_hog['covid(label)'].copy()
 
-	# run svm with cross validation for both sets of features
-	print('Testing SVMs for SFS and FC...')
-	clf_sfs = svm.SVC(kernel='linear', C=1)
-	clf_fc = svm.SVC(kernel='linear', C=1)
-	start_sfc = time.time()
-	scores_sfs = cross_val_score(clf_sfs, df_sfs_X, df_Y, cv=5)
-	end_sfc = time.time()
-	scores_fc = cross_val_score(clf_fc, df_fc_X, df_Y, cv=5)
-	end_fc = time.time()
+	# # run svm with cross validation for both sets of features
+	# print('Testing SVMs for SFS and FC...')
+	# clf_sfs = svm.SVC(kernel='linear', C=1)
+	# clf_fc = svm.SVC(kernel='linear', C=1)
+	# start_sfc = time.time()
+	# scores_sfs = cross_val_score(clf_sfs, df_sfs_X, df_Y, cv=5)
+	# end_sfc = time.time()
+	# scores_fc = cross_val_score(clf_fc, df_fc_X, df_Y, cv=5)
+	# end_fc = time.time()
 
-	print('Completed cross validation with SFS features in', end_sfc - start_sfc, 'with average accuarcy of', np.average(scores_sfs))
-	print('Completed cross validation with FC features in', end_fc - end_sfc, 'with average accuarcy of', np.average(scores_fc))
+	# print('Completed cross validation with SFS features in', end_sfc - start_sfc, 'with average accuarcy of', np.average(scores_sfs))
+	# print('Completed cross validation with FC features in', end_fc - end_sfc, 'with average accuarcy of', np.average(scores_fc))

@@ -102,24 +102,6 @@ def gabor_plot(kernel_params, results, image):
             ax.imshow(power)
             ax.axis('off')
     plt.show()
-
-# creates dataframe of features given function and image path
-def create_feature_df(feature_function, name):
-    image_path = name + '/'
-
-    feature_data = []
-    for i in os.listdir(image_path):
-        image_file = image_path + i
-        image_file = cv2.imread(image_file, 0)
-        image = img_as_float(image_file)[shrink]
-        # makes dataframe row with filename and image features, and flattens each feature
-        feature_data.append([i] + list(np.array(feature_function(image)).flatten()))
-
-    df_feat = pd.DataFrame(feature_data)
-    df_feat_classified = df_hog.merge(
-        df_from_csv[['filename', 'covid(label)']], left_on=0, right_on="filename")
-    return df_feat_classified
-
  
 if __name__=="__main__":
     shrink = (slice(0, None, 3), slice(0, None, 3))

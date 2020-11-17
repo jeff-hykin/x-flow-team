@@ -42,6 +42,26 @@ def gabor_feature(image):
     return results
 
 
+
+# creates dataframe of features given function and image path
+def create_feature_df(feature_function, name):
+    df_from_csv = pd.read_csv(os.path.join(sys.path[0], 'train.csv')).fillna(0)
+    image_path = name + '/'
+    shrink = (slice(0, None, 3), slice(0, None, 3))
+    feature_data = []
+    for i in os.listdir(image_path):
+        image_file = image_path + i
+        image_file = cv2.imread(image_file, 0)
+        image = img_as_float(image_file)[shrink]
+        # makes dataframe row with filename and image features, and flattens each feature
+        feature_data.append([i] + list(np.array(feature_function(image)).flatten()))
+
+    df_feat = pd.DataFrame(feature_data)
+    df_feat_classified = df_feat.merge(
+        df_from_csv[['filename', 'covid(label)']], left_on=0, right_on="filename")
+    return df_feat_classified
+
+
 def visualizeFeatures(name, df_from_csv):
     '''
     name : 'train' or 'test'
