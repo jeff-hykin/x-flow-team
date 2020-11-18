@@ -93,13 +93,14 @@ def conditional_entropy(feature_data, labels):
 
 # splits train data into multiple subsets
 # can be used to make train/val split, or for cross validation
-def split_data(data, num_subsets, ratio=-1):
+def split_data(data, ratio=0.5):
     '''
     inputs: DataFrame data,
             number of subsets to be created,
             ratio of first subset length to total length,
     output: array of subsets
     '''
+    # print(data.head())
     # combine inputs and labels, reorder, then seperate again
     data = data.sample(frac=1)
     data = data.reset_index(drop=True)
@@ -107,44 +108,24 @@ def split_data(data, num_subsets, ratio=-1):
     num_points = len(data.index)
     data_split = []
 
-    # if ratio is -1, then use even ratios
-    if ratio == -1:
-        cut_size = (math.ceil(num_points - first_cut))/num_subsets
-        start_point = 0
-        end_point = cut_size
-
-        # process cuts
-        for a in range(num_subsets-1):
-            data_split.append(data[start_point:end_point].copy())
-            start_point = end_point
-            end_point += cut_size
-
-        # process last cut
-        start_point = end_point
-        end_point = num_points
-        data_split.append(data[start_point:end_point].copy())
+    # print('num_points:', num_points)
 
     # make first cut ratio size, and rest evenly sized
-    else:
-        first_cut = math.ceil(ratio * num_points)
-        other_cut = (math.ceil(num_points - first_cut))/(num_subsets-1)
-        start_point = 0
-        end_point = first_cut
+    first_cut = math.ceil(ratio * num_points)
+    # print('first cut', first_cut)
+    start_point = 0
+    end_point = first_cut
 
-        # process first cut
-        data_split.append(data[start_point:end_point].copy())
+    # process first cut
+    data_split.append(data[start_point:end_point].copy())
 
-        
-        # process intermediate cuts
-        for a in range(1, num_subsets-1):
-            start_point = end_point
-            end_point += other_cut
-            data_split.append(data[start_point:end_point].copy())
+    # process last cut
+    start_point = end_point
+    end_point = num_points
+    data_split.append(data[start_point:end_point].copy())
 
-        # process last cut
-        start_point = end_point
-        end_point = num_points
-        data_split.append(data[start_point:end_point].copy())
+    
+    # print(data_split[0][100])
 
         
     return data_split
