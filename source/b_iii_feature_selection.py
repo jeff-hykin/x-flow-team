@@ -13,7 +13,7 @@ from sklearn.linear_model import LogisticRegression
 from mlxtend.feature_selection import SequentialFeatureSelector as SFS
 from sklearn.neighbors import KNeighborsClassifier as KNN
 from sklearn import svm
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, train_test_split
 import time
 
 from misc_tools import split_data
@@ -46,16 +46,17 @@ def sequential_forward_selection(data, num_tests, feature_counts):
 							k_features=nfeat, # number of features to be chosen
 							forward=True, # SFS, not SBS
 							floating=False,
-							verbose=2,
+							verbose=0,
 							scoring='accuracy', # scored based on accuracy
 							cv=num_tests) # num_tests-fold cross validaton
 		# train
 		sfs = sfs.fit(data_features, data_labels)
+		print(type(sfs.k_feature_names_))
 
 		# process results
 		print('CV score for', nfeat, 'features:\n', sfs.k_score_)
 		if sfs.k_score_ > best_features['accuracy']: # update best
-			best_features = {'accuracy': sfs.k_score_, 'indicies': sfs.k_feature_idx_, 'count': nfeat}
+			best_features = {'accuracy': sfs.k_score_, 'indicies': sfs.k_feature_names_, 'count': nfeat}
 	
 	print('Best SFS features accuracy is', best_features['accuracy'], 'with', best_features['count'], 'features at indicies', best_features['indicies'])
 	return best_features['indicies']
@@ -75,19 +76,24 @@ def fischer_criterion(data, d):
 	# denom:
 	# for each class
 	# (average of all feature values ever) - (average of all feature values in class)
-	classes = train_labels.ix[:,0].unique() # number of classes
+	classes = data['covid(label)'].unique() # number of classes
 	numerator = 0
 	denomenator = 0
 	ud = data[d].mean() # average of all values in feature / mu d
 	for k in classes: # for each class / sum k
 		vals_in_class = data.loc[data['covid(label)'] == k] # create subdf with all values in given class
 		ukd = vals_in_class[d].mean() # average of feature values in given class / mu kd
-		for xnd in vals_in_class: # for each feature value in class / sum xn
+		for xnd in vals_in_class[d]: # for each feature value in class / sum xn
+			
 			numerator += (xnd - ukd) ** 2
 		denomenator += (ud - ukd) ** 2
 
-	# calculate final fischer's criterion
-	fc = numerator / denomenator
+	# avoid empty
+	if denomenator == 0:
+		fc = float('inf')
+	else:
+		# calculate final fischer's criterion
+		fc = numerator / denomenator
 
 	return fc
 
@@ -101,7 +107,8 @@ def fischer_criterion_selection(data, feature_counts):
 	'''
 	# split training data into validation and training subsets
 	train_ratio = 0.75 # ratio of training size to validation size
-	data_split = split_data(data, 2, training_ratio)
+	data_split = split_data(data, train_ratio)
+	# print(data_split[0][80])
 
 	features_and_scores = [] # tuple of feature and score
 	# calculate criterion for each feature
@@ -112,22 +119,30 @@ def fischer_criterion_selection(data, feature_counts):
 			features_and_scores.append(( feature , fischer_criterion(data_split[0],feature) ))
 
 	# reorder array by increasing score (inplace)
-	features_and_scores.reorder(key=lambda tup: tup[1])
+	features_and_scores.sort(key=lambda tup: tup[1])
+
+	print('Ordered', len(features_and_scores), 'features with fischer scores')
+	# print(features_and_scores[0])
+	# print(features_and_scores[1])
 
 	# run validation subset for different feature counts
-	val_labels = data[1]['covid(label)'].copy()
-	train_labels = data[0]['covid(label)'].copy()
+	val_labels = data_split[1]['covid(label)'].copy()
+	train_labels = data_split[0]['covid(label)'].copy()
 	best_features = {'accuracy': 0, 'count': 0}
-	prev_nfeat = 0
-	val_features = pd.DataFrame()
-	train_features = pd.DataFrame()
+	prev_nfeat = 1 # avoid starting with empty dataframe
+	f = features_and_scores[0][0] # extract feature as f
+	val_features = pd.DataFrame(data_split[1][f]) # make dataframe
+	train_features = pd.DataFrame(data_split[0][f]) # make dataframe
+
+	print('Testing for different numbers of features...')
 
 	# test for different numbers of features
 	for nfeat in feature_counts:
+		print(nfeat, '...')
 
 		# create features list for testing
-		if ifeat in range(prev_nfeat, nfeat): # do not bother re-add already existing features
-			f = features_and_score[ifeat][0] # extract feature as f
+		for ifeat in range(prev_nfeat, nfeat): # do not bother re-add already existing features
+			f = features_and_scores[ifeat][0] # extract feature as f
 			val_features = val_features.join(data_split[1][f]) # add to dataframe
 			train_features = train_features.join(data_split[0][f]) # add to dataframe
 
@@ -142,12 +157,15 @@ def fischer_criterion_selection(data, feature_counts):
 
 		# update prev number of features for next iteration
 		prev_nfeat = nfeat
+		print('complete with', nfeat)
 
+	print('Processing optimal features...', end=' ')
 	# create array of optimal features
 	optimal_features = []
 	optimal_nfeats = best_features['count'] # best number of people
 	for optimal_feature, optimal_score in features_and_scores[:optimal_nfeats]:
 		optimal_features.append(optimal_feature)
+	print('complete')
 
 	print('Best Fischer Criterion features accuracy is', best_features['accuracy'], 'with', best_features['count'], 'features at indicies', optimal_features)
 	return optimal_features
@@ -158,45 +176,44 @@ if __name__ == "__main__":
 	print('Obtaining features...')
 
 	# loading features df
-	df_hog = create_feature_df(hog_feature, 'new_train100') # 1157 features...
-	print(df_hog.head())
+	df_hog = create_feature_df('new_train100') # 1157 features...
 
 	# # hyperparameter for both - list of feature counts to test
-	# feature_counts = [15, 25, 35, 40]
+	feature_counts = [15, 25, 35, 40]
 
 
-	# print('Running feature selection algorithms...')
-	# # wrapper feature selection - sequential forward selection for multiple subsets
-	# num_tests = 10 # hyperparameter - cv folds
-	# sfs_features = sequential_forward_selection(df_hog, num_tests, feature_counts)
+	print('Running feature selection algorithms...')
+	# wrapper feature selection - sequential forward selection for multiple subsets
+	num_tests = 5 # hyperparameter - cv folds
+	sfs_features = sequential_forward_selection(df_hog, num_tests, feature_counts)
 
 	# filter feature selection - fischer testing with different feature counts
 	# fc_features = fischer_criterion_selection(df_hog, feature_counts)
 
 	# print('Creating subfeature lists...')
 
-	# # create DataFrame for SFS feature choices
-	# df_sfs_X = pd.DataFrame()
-	# if feature in sfs_features:
-	# 	df_sfs_X = df_sfs_X.join(df_hog[feature]) # add to dataframe
+	# create DataFrame for SFS feature choices
+	df_sfs_X = pd.DataFrame(df_hog[sfs_features[0]])
+	for feature in sfs_features[1:]:
+		df_sfs_X = df_sfs_X.join(df_hog[feature]) # add to dataframe
 
-	# # create DataFrame for FC feature choices
-	# df_fc_X = pd.DataFrame()
-	# if feature in fc_features:
-	# 	df_fc_X = df_fc_X.join(df_hog[feature]) # add to dataframe
+	# create DataFrame for FC feature choices
+	df_fc_X = pd.DataFrame(df_hog[fc_features[0]])
+	if feature in fc_features:
+		df_fc_X = df_fc_X.join(df_hog[feature]) # add to dataframe
 
-	# # create DataFrame for labels
-	# df_Y = df_hog['covid(label)'].copy()
+	# create DataFrame for labels
+	df_Y = df_hog['covid(label)'].copy()
 
-	# # run svm with cross validation for both sets of features
-	# print('Testing SVMs for SFS and FC...')
-	# clf_sfs = svm.SVC(kernel='linear', C=1)
-	# clf_fc = svm.SVC(kernel='linear', C=1)
-	# start_sfc = time.time()
-	# scores_sfs = cross_val_score(clf_sfs, df_sfs_X, df_Y, cv=5)
-	# end_sfc = time.time()
-	# scores_fc = cross_val_score(clf_fc, df_fc_X, df_Y, cv=5)
-	# end_fc = time.time()
+	# run svm with cross validation for both sets of features
+	print('Testing SVMs for SFS and FC...')
+	clf_sfs = svm.SVC(kernel='linear', C=1)
+	clf_fc = svm.SVC(kernel='linear', C=1)
+	start_sfc = time.time()
+	scores_sfs = cross_val_score(clf_sfs, df_sfs_X, df_Y, cv=5)
+	end_sfc = time.time()
+	scores_fc = cross_val_score(clf_fc, df_fc_X, df_Y, cv=5)
+	end_fc = time.time()
 
-	# print('Completed cross validation with SFS features in', end_sfc - start_sfc, 'with average accuarcy of', np.average(scores_sfs))
+	print('Completed cross validation with SFS features in', end_sfc - start_sfc, 'with average accuarcy of', np.average(scores_sfs))
 	# print('Completed cross validation with FC features in', end_fc - end_sfc, 'with average accuarcy of', np.average(scores_fc))
