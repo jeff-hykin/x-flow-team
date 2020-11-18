@@ -3,11 +3,20 @@ from sklearn.model_selection import cross_validate
 import matplotlib.pyplot as plt
 
 def AdaBoost(features, labels):
-    # the base estimator is DecisionTreeClassifier(max_depth=1)
-    clf = AdaBoostClassifier(n_estimators=100, random_state=0)
-    # 5-fold cross validation
-    cv_results = cross_validate(clf, features, labels, cv=5)
-    return cv_results['test_score']
+    base_models = [
+        DecisionTreeClassifier(max_depth=1),
+        svm.SVC(kernel='linear', C=1),
+        MLPClassifier(random_state=1, max_iter=300),
+        KNeighborsClassifier(n_neighbors=3)
+    ]
+    result = []
+    # try each base model
+    for base_model in base_models:
+        clf = AdaBoostClassifier(base_estimator=base_model, n_estimators=100, random_state=0)
+        # 5-fold cross validation
+        cv_results = cross_validate(clf, features, labels, cv=5)
+        result.append(cv_results['test_score'])
+    return result
 
 if __name__=="__main__":
     # wrapper features
