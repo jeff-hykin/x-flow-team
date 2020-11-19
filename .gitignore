@@ -3,6 +3,7 @@
 # 
 \.idea
 *.nosync*
+new_train*
 
 # 
 # Linux
