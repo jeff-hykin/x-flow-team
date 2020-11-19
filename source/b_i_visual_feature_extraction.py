@@ -101,7 +101,7 @@ def gabor_plot(kernel_params, results, image):
             power = results[i//2 + 5*j][1]
             ax.imshow(power)
             ax.axis('off')
-    plt.show()
+    plt.savefig("submission/images/gabor_features.png")
  
 if __name__=="__main__":
     shrink = (slice(0, None, 3), slice(0, None, 3))
