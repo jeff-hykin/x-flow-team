@@ -111,12 +111,10 @@ def conditional_entropy_metric(df_classified, title, to_drop=[0, 'filename', 'co
 
 
 if __name__ == "__main__":
-    train_features, train_labels, test_features = get_train_test()
-    print(train_features.columns)
-    # df_from_csv = pd.read_csv(os.path.join(sys.path[0], 'train.csv')).fillna(0)
-    # print(df_from_csv.head())
-    # # One hot encoding for countries and gender
-    # one_hot_csv = pd.get_dummies(df_from_csv, columns=['gender', 'location'])
-    # print("Plotted csv information with conditional entropy")
-    # conditional_entropy_metric(one_hot_csv, "CSV Information", ['filename', 'covid(label)'])
-    # visualize_features("new_train100", df_from_csv)
+    df_from_csv = pd.read_csv(os.path.join(sys.path[0], 'train.csv')).fillna(0)
+    print(df_from_csv.head())
+    # One hot encoding for countries and gender
+    one_hot_csv = pd.get_dummies(df_from_csv, columns=['gender', 'location'])
+    print("Plotted csv information with conditional entropy")
+    conditional_entropy_metric(one_hot_csv, "CSV Information", ['filename', 'covid(label)'])
+    visualize_features("new_train100", df_from_csv)
