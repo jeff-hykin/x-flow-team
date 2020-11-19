@@ -58,6 +58,6 @@ if __name__=="__main__":
     df_hog = create_feature_df(hog_feature, 'new_train100') # 10000 features...
 
     df_hog = df_hog.values
-    hog_feature = df_hog[:, 1:-2]
-    hog_label = df_hog[:, -1]
+    hog_feature = df_hog[:, 1:-2].astype('float32')
+    hog_label = df_hog[:, -1].astype('float32')
     fit_time, avg_acc = AdaBoost(hog_feature, hog_label)
