@@ -90,3 +90,42 @@ def conditional_entropy(feature_data, labels):
         conditional_entropy[each_feature] = not_usefulness
     
     return conditional_entropy
+
+# splits train data into multiple subsets
+# can be used to make train/val split, or for cross validation
+def split_data(data, ratio=0.5):
+    '''
+    inputs: DataFrame data,
+            number of subsets to be created,
+            ratio of first subset length to total length,
+    output: array of subsets
+    '''
+    # print(data.head())
+    # combine inputs and labels, reorder, then seperate again
+    data = data.sample(frac=1)
+    data = data.reset_index(drop=True)
+
+    num_points = len(data.index)
+    data_split = []
+
+    # print('num_points:', num_points)
+
+    # make first cut ratio size, and rest evenly sized
+    first_cut = math.ceil(ratio * num_points)
+    # print('first cut', first_cut)
+    start_point = 0
+    end_point = first_cut
+
+    # process first cut
+    data_split.append(data[start_point:end_point].copy())
+
+    # process last cut
+    start_point = end_point
+    end_point = num_points
+    data_split.append(data[start_point:end_point].copy())
+
+    
+    # print(data_split[0][100])
+
+        
+    return data_split
