@@ -176,7 +176,7 @@ if __name__ == "__main__":
 	print('Obtaining features...')
 
 	# loading features df
-	df_hog = create_feature_df('new_train100') # 1157 features...
+	df_hog = create_feature_df(hog_feature, 'new_train100') # 1157 features...
 
 	# # hyperparameter for both - list of feature counts to test
 	feature_counts = [15, 25, 35, 40]
@@ -188,7 +188,7 @@ if __name__ == "__main__":
 	sfs_features = sequential_forward_selection(df_hog, num_tests, feature_counts)
 
 	# filter feature selection - fischer testing with different feature counts
-	# fc_features = fischer_criterion_selection(df_hog, feature_counts)
+	fc_features = fischer_criterion_selection(df_hog, feature_counts)
 
 	# print('Creating subfeature lists...')
 
