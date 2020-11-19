@@ -90,12 +90,12 @@ def chi2_metric(df_classified, title):
     plt.show()
 
 
-def conditional_entropy_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)']):
+def conditional_entropy_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], genImage=True):
     """
     Calculates cond_entropy score of each feature with respect to the covid labels
     Plots results in a scatter plot and image matrix of entropy
     """
-    calc_cond_entropy = SelectKBest(score_func=mutual_info_classif, k=4)
+    calc_cond_entropy = SelectKBest(score_func=mutual_info_classif, k=1)
     
     # normalization of features in each sample
     feature_data = df_classified.drop(to_drop, axis=1).values
@@ -112,17 +112,19 @@ def conditional_entropy_metric(df_classified, title, to_drop=[0, 'filename', 'co
     plt.scatter(df_classified.drop(
         to_drop, axis=1).columns, df_cond_entropy.scores_, alpha=0.3)
     plt.xlabel("Feature")
+    plt.xticks(rotation=90)
     plt.ylabel("cond_entropy")
     plt.title(title)
     plt.show()
     
-    # show the conditional entropy as an image matrix
-    length = int(np.sqrt(df_cond_entropy.scores_.shape[0]))
-    tem = np.reshape(df_cond_entropy.scores_, (length, length))
-    plt.figure()
-    plt.imshow(tem, cmap=plt.cm.gray)
-    plt.title(title + "as image")
-    plt.show()
+    if genImage:
+        # show the conditional entropy as an image matrix
+        length = int(np.sqrt(df_cond_entropy.scores_.shape[0]))
+        tem = np.reshape(df_cond_entropy.scores_, (length, length))
+        plt.figure()
+        plt.imshow(tem, cmap=plt.cm.gray)
+        plt.title(title + "as image")
+        plt.show()
 
 
 if __name__ == "__main__":
@@ -131,5 +133,6 @@ if __name__ == "__main__":
     # One hot encoding for countries and gender
     one_hot_csv = pd.get_dummies(df_from_csv, columns=['gender', 'location'])
     print("Plotted csv information with conditional entropy")
-    conditional_entropy_metric(one_hot_csv, "CSV Information", ['filename', 'covid(label)'])
-    visualizeFeatures("new_train100", df_from_csv)
+    # conditional_entropy_metric(df_from_csv, "CSV Information", ['filename','gender', 'location', 'covid(label)'])
+    conditional_entropy_metric(one_hot_csv, "CSV Information", ['filename', 'covid(label)'], False)
+    # visualizeFeatures("new_train100", df_from_csv)
