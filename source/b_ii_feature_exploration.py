@@ -168,13 +168,30 @@ def categoricalPlots(data):
         plt.xlabel("Category")
         plt.ylabel("Count")
         plt.show()
+
+def interpolateCategories(series):
+    # from https://stackoverflow.com/questions/43586058/pandas-interpolate-with-nearest-for-non-numeric-values
+    fact = series.astype('category').factorize()
+
+    series_cat = pd.Series(fact[0]).replace(-1, np.nan) # get string as categorical (-1 is NaN)
+    series_cat_interp = series_cat.interpolate("nearest") # interpolate categorical
+
+    cat_to_string = {i:x for i,x in enumerate(fact[1])} # dict connecting category to string
+    series_str_interp = series_cat_interp.map(cat_to_string) # turn category back to string
+
+    return series_str_interp
     
+def interpolateData(df):
+    df[['age']] = df[['age']].fillna(df['age'].mean(skipna=True))
+    df = df.interpolate().apply(interpolateCategories)
+    return df
 
 
 if __name__ == "__main__":
     # df_from_csv = pd.read_csv(os.path.join(sys.path[0], 'train.csv')).fillna(-1)
     df_from_csv = pd.read_csv(os.path.join(sys.path[0], 'train.csv'))
     print(df_from_csv.head())
+    df_from_csv = interpolateData(df_from_csv)
     # One hot encoding for countries and gender
     one_hot_csv = pd.get_dummies(df_from_csv, columns=['gender', 'location'])
     print("Plotted csv information with mutual_information")
