@@ -1,30 +1,63 @@
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.model_selection import cross_validate
 import matplotlib.pyplot as plt
+from sklearn import svm
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import Perceptron
+from sklearn.ensemble import RandomForestClassifier
+from b_ii_feature_exploration import hog_feature, create_feature_df
 
 def AdaBoost(features, labels):
     base_models = [
-        DecisionTreeClassifier(max_depth=1),
-        svm.SVC(kernel='linear', C=1),
-        MLPClassifier(random_state=1, max_iter=300),
-        KNeighborsClassifier(n_neighbors=3)
+        (DecisionTreeClassifier(max_depth=1), 'SAMME.R'),
+        (svm.SVC(kernel='linear', C=1), 'SAMME'),
+        (Perceptron(tol=1e-3, random_state=0), 'SAMME')
     ]
-    result = []
+    fit_time = []
+    avg_acc = []
     # try each base model
     for base_model in base_models:
-        clf = AdaBoostClassifier(base_estimator=base_model, n_estimators=100, random_state=0)
+        clf = AdaBoostClassifier(base_estimator=base_model[0], algorithm=base_model[1],
+                                 n_estimators=100, random_state=0)
         # 5-fold cross validation
         cv_results = cross_validate(clf, features, labels, cv=5)
-        result.append(cv_results['test_score'])
-    return result
+        fit_time.append(np.mean(cv_results['fit_time']))
+        avg_acc.append(np.mean(cv_results['test_score']))
+
+
+    
+    ind = np.arange(len(base_models))  # the x locations for the groups
+    width = 0.35  # the width of the bars
+    
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(ind - width/2, fit_time, width, color='SkyBlue', label='fit_time')
+    
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel('training time')
+    ax.set_title('training time for each base model of AdaBoost')
+    plt.xticks(ind,('DecisionTree', 'SVM', 'Perceptron'))
+    ax.legend()
+    plt.show()
+
+    fig, ax = plt.subplots()
+    rects2 = ax.bar(ind + width/2, avg_acc, width, color='IndianRed', label='avg_acc')
+    ax.set_ylabel('Average accuracy')
+    ax.set_title('Average accuracy for each base model of AdaBoost')
+    plt.xticks(ind,('DecisionTree', 'SVM', 'Perceptron'))
+    ax.legend()
+    plt.show()
+
+    return fit_time, avg_acc
 
 if __name__=="__main__":
     # wrapper features
 
     # filter features
 
-    # compare the results
-    plt.title("compare between wrapper and filter")
-    plt.plot([1,2,3,4,5], result1)
-    plt.plot([1,2,3,4,5], result2)
-    plt.show()
+    # loading features df
+    df_hog = create_feature_df(hog_feature, 'new_train100') # 10000 features...
+
+    df_hog = df_hog.values
+    hog_feature = df_hog[:, 1:-2].astype('float32')
+    hog_label = df_hog[:, -1].astype('float32')
+    fit_time, avg_acc = AdaBoost(hog_feature, hog_label)
