@@ -2,7 +2,11 @@ import cv2
 import os
 
 def crop_resize(image, new_image_size):
-    # shape like (1024,1007,3)
+    # if there's color, convert to grayscale
+    if len(image.shape) == 3:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        
+    # shape like (1024,1007,1)
     size = image.shape
     if size[0] == size[1]:
         crop = image
@@ -10,12 +14,12 @@ def crop_resize(image, new_image_size):
         center = size[0] // 2
         half = size[1] // 2
         # crop the center of image
-        crop = image[center-half:center+(size[1]-half),:,:]
+        crop = image[center-half:center+(size[1]-half),:]
     else:
         center = size[1] // 2
         half = size[0] // 2
         # crop the center of image
-        crop = image[:, center-half:center+(size[0]-half), :]
+        crop = image[:, center-half:center+(size[0]-half)]
     # resize the image
     return cv2.resize(crop, (new_image_size, new_image_size))
 

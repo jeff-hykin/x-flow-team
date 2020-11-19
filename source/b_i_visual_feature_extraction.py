@@ -1,29 +1,27 @@
-from skimage.feature import hog
+from scipy import ndimage as ndi
 from skimage import data, exposure
+from skimage.feature import hog
+from skimage.filters import gabor_kernel
+from skimage.util import img_as_float
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy import ndimage as ndi
-from skimage.util import img_as_float
-from skimage.filters import gabor_kernel
 
-def hog_feature(image):
+def hog_feature(image, options=None):
     """
     example usage:
         feature_mapped_images = np.array([ hog_feature(image) for image in train_images ])
     source: 
         https://www.analyticsvidhya.com/blog/2019/09/feature-engineering-images-introduction-hog-feature-descriptor/?utm_source=blog&utm_medium=3-techniques-extract-features-from-image-data-machine-learning
     """
-    # NOTE: while these arguments work (for grayscale),
-    #       I don't have a good 'feel' as to what they 
-    #       actually do
-    return hog(
-        image,
-        orientations=8,
-        pixels_per_cell=(16, 16),
-        cells_per_block=(1, 1),
-        visualize=True,
-        multichannel=False
-    )[1]
+    options = {} if options is None else options
+    return hog(image, **{
+        "orientations": 8,
+        "pixels_per_cell": (16, 16),
+        "cells_per_block": (1, 1),
+        "visualize": True,
+        "multichannel": False,
+        **options
+    })[1]
 
 
 def visualize(original_image, hog_image):
@@ -59,8 +57,7 @@ def gabor_feature(image):
             kernel_params.append(params)
             # Save kernel and the power image for each image
             results.append((kernel, power(image, kernel)))
-    gabor_plot(kernel_params, results, image)
-    return results
+    return results, kernel_params
 
 def power(image, kernel):
     # Normalize images for better comparison.
@@ -107,4 +104,5 @@ if __name__=="__main__":
     shrink = (slice(0, None, 3), slice(0, None, 3))
     brick = img_as_float(data.brick())[shrink]
     # a single test of Gabor Extraction
-    gabor_feature(brick)
+    results, kernel_params = gabor_feature(brick)
+    gabor_plot(kernel_params, results, brick)

@@ -1,5 +1,7 @@
 from collections import Counter # frequency count
 from csv import reader
+
+from pandas.core.frame import DataFrame
 from scipy import ndimage as ndi
 from skimage import data, exposure
 from skimage.filters import gabor_kernel
@@ -19,11 +21,14 @@ import sys
 relative_path = lambda *filepath_peices : os.path.join(os.path.dirname(__file__), *filepath_peices)
 
 data = ()
-def get_train_test():
+def get_train_test(train_path="train", test_path="test"):
     """
+    ex:
+        train_features, train_labels, test_features = get_train_test()
+    
     returns train_features, train_labels, test_features
     They're dataframes
-    Also the train_features["images"] are the list of images
+    Also train_features["images"] is a list of images
     """
     global data
     # if data hasn't been loaded
@@ -53,7 +58,7 @@ def get_train_test():
         )
         test_inputs = test_inputs.drop("filename", axis="columns")
         
-        data = (training_inputs, training_labels, test_inputs)
+        data = (training_inputs, pd.DataFrame(training_labels), test_inputs)
     
     return data
 
