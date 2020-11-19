@@ -42,4 +42,4 @@ def get_cropped_and_resized_images(name, new_image_size):
     return new_images
 
 if __name__=="__main__":
-    get_cropped_and_resized_images('train', 448)
+    get_cropped_and_resized_images('train', 100)
