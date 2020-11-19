@@ -91,14 +91,14 @@ def visualizeFeatures(name, df_from_csv):
         df_from_csv[['filename', 'covid(label)']], left_on=0, right_on="filename")
     print("Dataframe with Gabor features and classification")
     print(df_gabor_classified.head())
-    conditional_entropy_metric(df_gabor_classified, "Gabor Metrics")
+    mutual_info_metric(df_gabor_classified, "Gabor Metrics")
     # HoG metrics
     df_hog = pd.DataFrame(hog_data)
     df_hog_classified = df_hog.merge(
         df_from_csv[['filename', 'covid(label)']], left_on=0, right_on="filename")
     print("Dataframe with HoG features and classification")
     print(df_hog_classified.head())
-    conditional_entropy_metric(df_hog_classified, "HoG Metrics")
+    mutual_info_metric(df_hog_classified, "HoG Metrics")
 
 def chi2_metric(df_classified, title):
     """
@@ -116,13 +116,13 @@ def chi2_metric(df_classified, title):
     plt.show()
 
 
-def conditional_entropy_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], genImage=True):
+def mutual_info_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], genImage=True):
     """
-    Calculates cond_entropy score of each feature with respect to the covid labels
+    Calculates mutual_info score of each feature with respect to the covid labels
     Plots results in a scatter plot and image matrix of entropy
     """
-    calc_cond_entropy = SelectKBest(score_func=mutual_info_classif, k=1)
-    
+    calc_mutual_info = SelectKBest(score_func=mutual_info_classif, k=1)
+    df_classified = df_classified.dropna()
     # normalization of features in each sample
     feature_data = df_classified.drop(to_drop, axis=1).values
     mean_feature_data = np.mean(feature_data, axis=1)
@@ -130,35 +130,56 @@ def conditional_entropy_metric(df_classified, title, to_drop=[0, 'filename', 'co
     feature_data = feature_data - mean_feature_data
     label = df_classified[['covid(label)']].values.ravel()
 
-    df_cond_entropy = calc_cond_entropy.fit(feature_data, label)
-#     df_cond_entropy = calc_cond_entropy.fit(df_classified.drop(
+    df_mutual_info = calc_mutual_info.fit(feature_data, label)
+#     df_mutual_info = calc_mutual_info.fit(df_classified.drop(
 #         to_drop, axis=1), df_classified[['covid(label)']].values.ravel())
-    print(df_cond_entropy.scores_)
+    print(df_mutual_info.scores_)
     plt.figure()
     plt.scatter(df_classified.drop(
-        to_drop, axis=1).columns, df_cond_entropy.scores_, alpha=0.3)
+        to_drop, axis=1).columns, df_mutual_info.scores_, alpha=0.3)
     plt.xlabel("Feature")
     plt.xticks(rotation=90)
-    plt.ylabel("cond_entropy")
+    plt.ylabel("mutual_info")
     plt.title(title)
     plt.show()
     
     if genImage:
         # show the conditional entropy as an image matrix
-        length = int(np.sqrt(df_cond_entropy.scores_.shape[0]))
-        tem = np.reshape(df_cond_entropy.scores_, (length, length))
+        length = int(np.sqrt(df_mutual_info.scores_.shape[0]))
+        tem = np.reshape(df_mutual_info.scores_, (length, length))
         plt.figure()
         plt.imshow(tem, cmap=plt.cm.gray)
         plt.title(title + "as image")
         plt.show()
 
+def categoricalPlots(data):
+    '''
+    Plots the categorical data from csv
+    '''
+    data = data.dropna()
+    label_count = list(data.groupby(["covid(label)"]).count()["age"])
+    plt.bar(["Negative", "Positive"], label_count)
+    plt.show()
+    data['age'] = (data['age'] // 10 * 10).astype(int).astype(str) + "-" + (data['age'] // 10 * 10 + 9).astype(int).astype(str)
+    for i in data.columns[1:-1]:
+        pd.crosstab(data[i], data['covid(label)']).plot(kind='bar', stacked=False)
+        plt.title(i)
+        plt.legend(["Negative", "Positive"])
+        plt.xlabel("Category")
+        plt.ylabel("Count")
+        plt.show()
+    
+
 
 if __name__ == "__main__":
-    df_from_csv = pd.read_csv(os.path.join(sys.path[0], 'train.csv')).fillna(0)
+    # df_from_csv = pd.read_csv(os.path.join(sys.path[0], 'train.csv')).fillna(-1)
+    df_from_csv = pd.read_csv(os.path.join(sys.path[0], 'train.csv'))
     print(df_from_csv.head())
     # One hot encoding for countries and gender
     one_hot_csv = pd.get_dummies(df_from_csv, columns=['gender', 'location'])
-    print("Plotted csv information with conditional entropy")
-    # conditional_entropy_metric(df_from_csv, "CSV Information", ['filename','gender', 'location', 'covid(label)'])
-    conditional_entropy_metric(one_hot_csv, "CSV Information", ['filename', 'covid(label)'], False)
-    # visualizeFeatures("new_train100", df_from_csv)
+    print("Plotted csv information with mutual_information")
+    mutual_info_metric(one_hot_csv, "CSV Information", ['filename', 'covid(label)'], False)
+    print("Plotting categorical data frequency bar charts...")
+    categoricalPlots(df_from_csv)
+    print("Visualizing image features...")
+    visualizeFeatures("new_train100", df_from_csv)
