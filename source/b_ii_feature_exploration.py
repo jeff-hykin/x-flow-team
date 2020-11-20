@@ -6,6 +6,7 @@ from skimage.util import img_as_float
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import mutual_info_classif
 from sklearn.feature_selection import SelectKBest
+from sklearn.metrics.pairwise import kernel_metrics
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
