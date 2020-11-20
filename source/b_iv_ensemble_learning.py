@@ -7,7 +7,7 @@ from sklearn.linear_model import Perceptron
 from sklearn.ensemble import RandomForestClassifier
 from b_ii_feature_exploration import hog_feature, create_feature_df
 
-def AdaBoost(features, labels):
+def ada_boost(features, labels):
     base_models = [
         (DecisionTreeClassifier(max_depth=1), 'SAMME.R'),
         (svm.SVC(kernel='linear', C=1), 'SAMME'),
@@ -60,4 +60,4 @@ if __name__=="__main__":
     df_hog = df_hog.values
     hog_feature = df_hog[:, 1:-2].astype('float32')
     hog_label = df_hog[:, -1].astype('float32')
-    fit_time, avg_acc = AdaBoost(hog_feature, hog_label)
+    fit_time, avg_acc = ada_boost(hog_feature, hog_label)

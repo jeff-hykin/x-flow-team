@@ -164,7 +164,7 @@ def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], 
         plt.title(title + "as image")
         plt.show()
 
-def categoricalPlots(data):
+def categorical_plots(data):
     '''
     Plots the categorical data from csv
     '''
@@ -181,7 +181,7 @@ def categoricalPlots(data):
         plt.ylabel("Count")
         plt.show()
 
-def interpolateCategories(series):
+def interpolate_categories(series):
     # from https://stackoverflow.com/questions/43586058/pandas-interpolate-with-nearest-for-non-numeric-values
     fact = series.astype('category').factorize()
 
@@ -193,14 +193,14 @@ def interpolateCategories(series):
 
     return series_str_interp
     
-def interpolateData(df):
+def interpolate_data(df):
     df[['age']] = df[['age']].fillna(df['age'].mean(skipna=True))
-    df = getCountries(df)
+    df = get_countries(df)
     return df
 
-def getCountries(df):
+def get_countries(df):
     # take the last word from the location values, to get the countries
-    df = df.interpolate().apply(interpolateCategories)
+    df = df.interpolate().apply(interpolate_categories)
     df['location']=df['location'].str.split(",").str[-1].str.strip()
     return df
 
@@ -209,7 +209,7 @@ if __name__ == "__main__":
     # df_from_csv = pd.read_csv(os.path.join(sys.path[0], 'train.csv')).fillna(-1)
     df_from_csv = pd.read_csv(os.path.join(sys.path[0], 'train.csv'))
     print(df_from_csv.head())
-    df_from_csv = interpolateData(df_from_csv)
+    df_from_csv = interpolate_data(df_from_csv)
     # One hot encoding for countries and gender
     one_hot_csv = pd.get_dummies(df_from_csv, columns=['gender', 'location'])
     print("Plotted csv information with mutual_information")
@@ -217,6 +217,6 @@ if __name__ == "__main__":
     print("Plotted csv information with anova")
     anova_metric(one_hot_csv, "CSV Information", ['filename', 'covid(label)'], False)
     print("Plotting categorical data frequency bar charts...")
-    categoricalPlots(df_from_csv)
+    categorical_plots(df_from_csv)
     print("Visualizing image features...")
     visualize_features("new_train100", df_from_csv)
