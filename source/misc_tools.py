@@ -1,5 +1,6 @@
 from collections import Counter # frequency count
 from csv import reader
+import numpy
 from scipy import ndimage as ndi
 from skimage import data, exposure
 from skimage.filters import gabor_kernel
@@ -19,11 +20,14 @@ import sys
 relative_path = lambda *filepath_peices : os.path.join(os.path.dirname(__file__), *filepath_peices)
 
 data = ()
-def get_train_test():
+def get_train_test(train_path="train", test_path="test"):
     """
+    ex:
+        train_features, train_labels, test_features = get_train_test()
+    
     returns train_features, train_labels, test_features
     They're dataframes
-    Also the train_features["images"] are the list of images
+    Also train_features["images"] is a list of images
     """
     global data
     # if data hasn't been loaded
@@ -37,7 +41,7 @@ def get_train_test():
         training_inputs = training_df.drop("covid(label)", axis="columns")
         training_inputs["images"] = training_inputs["filename"].transform(
             # convert to grayscale because they're basically already grayscale
-            lambda each_filename: cv2.imread(relative_path("train", each_filename), 0)
+            lambda each_filename: cv2.imread(relative_path(train_path, each_filename), 0)
         )
         training_inputs = training_inputs.drop("filename", axis="columns")
         
@@ -49,11 +53,11 @@ def get_train_test():
         # test_labels = None, yup no testing labels
         test_inputs["images"] = test_inputs["filename"].transform(
             # convert to grayscale because they're basically already grayscale
-            lambda each_filename: cv2.imread(relative_path("test", each_filename), 0)
+            lambda each_filename: cv2.imread(relative_path(test_path, each_filename), 0)
         )
         test_inputs = test_inputs.drop("filename", axis="columns")
         
-        data = (training_inputs, training_labels, test_inputs)
+        data = (training_inputs, pd.DataFrame(training_labels), test_inputs)
     
     return data
 
@@ -129,3 +133,28 @@ def split_data(data, ratio=0.5):
 
         
     return data_split
+
+def flatten(iterable):
+    return list(np.array(iterable).flatten())
+
+def images_in(foldername, include_filename=False):
+    """
+    returns [image1,image2, ...] (each image is a numpy array)
+    if include_filename=True
+        returns [ (filename1, image1), (filename2, image2), ... ]
+    """
+    images = []
+    for each_image_filename in os.listdir(foldername):
+        image_path = os.path.join(foldername, each_image_filename)
+        if include_filename:
+            images.append((each_image_filename, cv2.imread(image_path, 0)))
+        else:
+            images.append(cv2.imread(image_path, 0))
+    return images
+
+def is_grayscale(image):
+    as_numpy_array = numpy.array(image)
+    if len(as_numpy_array.shape) == 3:
+        if as_numpy_array.shape[2] >= 3:
+            return False
+    return True

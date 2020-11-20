@@ -14,32 +14,27 @@ import os
 import pandas as pd
 import sys
 
-from misc_tools import split_data, get_train_test
-from a_image_preprocessing import crop_resize
+from misc_tools import split_data, get_train_test, images_in, flatten
+from a_image_preprocessing import crop_resize, only_keep_every_third_pixel, preprocess_images
 from b_i_visual_feature_extraction import power, gabor_plot, gabor_feature, hog_feature
 
 # creates dataframe of features given function and image path
-def create_feature_df(extraction_fuction, name):
+def create_feature_df(extraction_fuction, image_folder_name):
     df_from_csv = pd.read_csv(os.path.join(sys.path[0], 'train.csv')).fillna(0)
-    # print(df_from_csv.head())
-    image_path = name + '/'
-    shrink = (slice(0, None, 3), slice(0, None, 3))
+    
     feature_data = []
-    for i in os.listdir(image_path):
-        image_file = image_path + i
-        image_file = cv2.imread(image_file, 0)
-        image = img_as_float(image_file)[shrink]
+    for each_filename, each_image in images_in(image_folder_name, include_filename=True):
+        preprocessed_image = only_keep_every_third_pixel(each_image)
         # makes dataframe row with filename and image features, and flattens each feature
-        feature_data.append([i] + list(np.array(extraction_fuction(image)).flatten()))
+        feature_data.append([each_filename] + flatten(extraction_fuction(preprocessed_image)))
+
     df_feat = pd.DataFrame(feature_data)
-    # print(df_feat.keys())
-    # print(feature_data[0])
-
     df_feat_classified = df_feat.merge(
-        df_from_csv[['filename', 'covid(label)']], left_on=0, right_on="filename")
-    # print(df_feat_classified.keys())
+        df_from_csv[['filename', 'covid(label)']],
+        left_on=0,
+        right_on="filename"
+    )
     df_feat_classified.drop([0, 'filename'], axis=1, inplace=True)
-
 
     return df_feat_classified
 
@@ -49,12 +44,12 @@ def visualize_features(name, df_from_csv):
     name : 'train' or 'test'
     '''
     shrink = (slice(0, None, 3), slice(0, None, 3))
-    image_path = name + '/'
+    path_to_images = name + '/'
     gabor_data = []
     hog_data = []
     # for each image, get features and append to array
-    for i in os.listdir(image_path):
-        image_file = image_path + i
+    for i in os.listdir(path_to_images):
+        image_file = path_to_images + i
         image_file = cv2.imread(image_file, 0)
         image = img_as_float(image_file)[shrink]
         # makes dataframe row with filename and image features, and flattens each feature

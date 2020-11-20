@@ -1,6 +1,26 @@
 import cv2
 import os
 from skimage.util import img_as_float
+import numpy as np
+
+from misc_tools import split_data, get_train_test, images_in, flatten, is_grayscale
+
+def preprocess_images(images, new_image_size=100):
+    """
+    default method for preprocessing images
+    - grayscale
+    - crop
+    """
+    results = []
+    for each_image in images:
+        new_image = np.copy(each_image)
+        # grayscale-ify
+        if not is_grayscale(new_image):
+            new_image = cv2.cvtColor(new_image, cv2.COLOR_BGR2GRAY)
+        new_image = crop_resize(new_image, new_image_size)
+        results.append(new_image)
+    
+    return results
 
 def crop_resize(image, new_image_size):
     # shape like (1024,1007,3)
@@ -11,12 +31,18 @@ def crop_resize(image, new_image_size):
         center = size[0] // 2
         half = size[1] // 2
         # crop the center of image
-        crop = image[center-half:center+(size[1]-half),:,:]
+        if is_grayscale(image):
+            crop = image[center-half:center+(size[1]-half),:]
+        else:
+            crop = image[center-half:center+(size[1]-half),:,:]
     else:
         center = size[1] // 2
         half = size[0] // 2
         # crop the center of image
-        crop = image[:, center-half:center+(size[0]-half), :]
+        if is_grayscale(image):
+            crop = image[:, center-half:center+(size[0]-half)]
+        else:
+            crop = image[:, center-half:center+(size[0]-half), :]
     # resize the image
     return cv2.resize(crop, (new_image_size, new_image_size))
 
@@ -41,7 +67,6 @@ def get_cropped_and_resized_images(name, new_image_size):
             new_images.append(cv2.imread(new_path + each_image_name))
     
     return new_images
-
 
 def only_keep_every_third_pixel(image):
     # my understanding is that this has a step size of 3
