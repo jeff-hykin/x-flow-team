@@ -135,7 +135,7 @@ def mutual_info_metric(df_classified, title, to_drop=[0, 'filename', 'covid(labe
     df_mutual_info = calc_mutual_info.fit(feature_data, label)
 #     df_mutual_info = calc_mutual_info.fit(df_classified.drop(
 #         to_drop, axis=1), df_classified[['covid(label)']].values.ravel())
-    print(df_mutual_info.scores_)
+    # print(df_mutual_info.scores_)
     plt.figure()
     plt.scatter(df_classified.drop(
         to_drop, axis=1).columns, df_mutual_info.scores_, alpha=0.3)
@@ -171,7 +171,7 @@ def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], 
     df_anova = calc_anova.fit(feature_data, label)
 #     df_anova = calc_anova.fit(df_classified.drop(
 #         to_drop, axis=1), df_classified[['covid(label)']].values.ravel())
-    print(df_anova.scores_)
+    # print(df_anova.scores_)
     plt.figure()
     plt.scatter(df_classified.drop(
         to_drop, axis=1).columns, df_anova.scores_, alpha=0.3)
@@ -226,8 +226,8 @@ def interpolateData(df):
 
 def getCountries(df):
     # take the last word from the location values, to get the countries
-    df['location']=df['location'].str.partition()[2].str.split().str[-1]
     df = df.interpolate().apply(interpolateCategories)
+    df['location']=df['location'].str.split(",").str[-1].str.strip()
     return df
 
 
