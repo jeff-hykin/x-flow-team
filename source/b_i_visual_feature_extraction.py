@@ -6,6 +6,8 @@ from skimage.util import img_as_float
 import matplotlib.pyplot as plt
 import numpy as np
 
+from a_image_preprocessing import only_keep_every_third_pixel
+
 def hog_feature(image, options=None):
     """
     example usage:
@@ -44,6 +46,7 @@ def gabor_feature(image, include_kernel=False):
     Extract 40 Gabor features, 8 different direction and 5 different frequency
     '''
     results = []
+    kernels = []
     kernel_params = []
     # 8 direction
     for theta in range(8):
@@ -54,10 +57,12 @@ def gabor_feature(image, include_kernel=False):
             kernel = gabor_kernel(frequency, theta=theta)
             params = 'theta=%d,\nfrequency=%.2f' % (theta * 180 / np.pi, frequency)
             kernel_params.append(params)
-            # Save power image for each image
+            # Save kernel and the power image for each image
             results.append(power(image, kernel))
+            kernels.append(kernel)
+    
     if include_kernel:
-        return results, kernel_params
+        return results, kernels, kernel_params
     else:
         return results        
     
@@ -68,7 +73,7 @@ def power(image, kernel):
     return np.sqrt(ndi.convolve(image, np.real(kernel), mode='wrap')**2 +
                    ndi.convolve(image, np.imag(kernel), mode='wrap')**2)
 
-def gabor_plot(kernel_params, results, image):
+def gabor_plot(kernel_params, kernels, results, image):
     '''
     kernel_params: the title of kernel
     results: (kernel, power) the Gabor kernel and the image feature
@@ -89,7 +94,7 @@ def gabor_plot(kernel_params, results, image):
             # Plot Gabor kernel
             ax = axes[i][j]
             # shape of results and kernel_params are both (40,)
-            kernel = results[i//2 + 5*j][0]
+            kernel = kernels[i//2 + 5*j]
             ax.imshow(np.real(kernel))
             ax.set_title(kernel_params[i//2 + 5*j])
             ax.set_xticks([])
@@ -97,14 +102,13 @@ def gabor_plot(kernel_params, results, image):
 
             # Plot Gabor responses with the contrast normalized for each filter
             ax = axes[i+1][j]
-            power = results[i//2 + 5*j][1]
+            power = results[i//2 + 5*j]
             ax.imshow(power)
             ax.axis('off')
-    plt.savefig("submission/images/gabor_features.png")
+    plt.savefig("../graphs/gabor_features.png")
  
 if __name__=="__main__":
-    shrink = (slice(0, None, 3), slice(0, None, 3))
-    brick = img_as_float(data.brick())[shrink]
+    brick = only_keep_every_third_pixel(data.brick())
     # a single test of Gabor Extraction
-    results, kernel_params = gabor_feature(brick, include_kernel=True)
-    gabor_plot(kernel_params, results, brick)
+    results, kernels, kernel_params = gabor_feature(brick, include_kernel=True)
+    gabor_plot(kernel_params, kernels, results, brick)

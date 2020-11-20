@@ -1,5 +1,6 @@
 import cv2
 import os
+from skimage.util import img_as_float
 
 def crop_resize(image, new_image_size):
     # shape like (1024,1007,3)
@@ -40,6 +41,14 @@ def get_cropped_and_resized_images(name, new_image_size):
             new_images.append(cv2.imread(new_path + each_image_name))
     
     return new_images
+
+
+def only_keep_every_third_pixel(image):
+    # my understanding is that this has a step size of 3
+    # for both dimensions so only 1 out of three in each direction
+    # will be kept
+    shrink = (slice(0, None, 3), slice(0, None, 3))
+    return img_as_float(image)[shrink]
 
 if __name__=="__main__":
     get_cropped_and_resized_images('train', 100)
