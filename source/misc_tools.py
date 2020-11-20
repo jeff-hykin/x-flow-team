@@ -59,7 +59,8 @@ def get_train_test(train_path="train", test_path="test"):
         
         data = (training_inputs, pd.DataFrame(training_labels), test_inputs)
     
-    return data
+    # always return a copy
+    return tuple([ pd.DataFrame.copy(each) for each in data])
 
 def conditional_entropy(feature_data, labels):
     if type(feature_data) == dict:
@@ -158,3 +159,31 @@ def is_grayscale(image):
         if as_numpy_array.shape[2] >= 3:
             return False
     return True
+
+def split_into_columns(dataframe, column_name):
+    feature_list = dataframe[column_name].tolist()
+    new_column_names = list(range(len(feature_list[0])))
+    dataframe[new_column_names] = pd.DataFrame(feature_list, index=dataframe.index)
+    new_dataframe = pd.DataFrame(dataframe[column_name].to_list(), columns=new_column_names)
+    for each_column in dataframe.drop(column_name, "columns").columns:
+        new_dataframe[each_column] = dataframe[each_column]
+    return new_dataframe
+
+def list_of_images_to_dataframe(list_of_images):
+    flattened = [ np.array(each_image).flatten() for each_image in list_of_images ]
+    big_array = np.array(flattened)
+    dict_of_feature_lists = {
+        each_index: each_feature_colum for each_index, each_feature_colum in enumerate(big_array.transpose())
+    }
+    # here's what that'd look like
+    # (each image is visually column here)
+    #         image1, image2, image3, ...
+    # {
+    #    0: [ 0.324,  0.324,  0.324,  ... ]
+    #    1: [ 0.324,  0.324,  0.324,  ... ]
+    #    2: [ 0.324,  0.324,  0.324,  ... ]
+    #    3: [ 0.324,  0.324,  0.324,  ... ]
+    #    4: [ 0.324,  0.324,  0.324,  ... ]
+    # }
+    # but in the data frame the 0: 1: 2: 3: will be the columns, with each row being a feature
+    return pd.DataFrame(dict_of_feature_lists)

@@ -3,24 +3,22 @@ import os
 from skimage.util import img_as_float
 import numpy as np
 
-from misc_tools import split_data, get_train_test, images_in, flatten, is_grayscale
+from misc_tools import split_data, get_train_test, images_in, flatten, is_grayscale, list_of_images_to_dataframe
 
-def preprocess_images(images, new_image_size=100):
-    """
-    default method for preprocessing images
-    - grayscale
-    - crop
-    """
-    results = []
-    for each_image in images:
-        new_image = np.copy(each_image)
-        # grayscale-ify
-        if not is_grayscale(new_image):
-            new_image = cv2.cvtColor(new_image, cv2.COLOR_BGR2GRAY)
-        new_image = crop_resize(new_image, new_image_size)
-        results.append(new_image)
-    
-    return results
+def get_preprocessed_train_test(**kwargs):
+    train_features, train_labels, test_features = get_train_test()
+    transformation = lambda each: preprocess_image(each, **kwargs)
+    train_features['images'] = train_features['images'].transform(transformation)
+    test_features['images'] = test_features['images'].transform(transformation)
+    return train_features, train_labels, test_features
+
+def preprocess_image(each_image, new_image_size=100):
+    new_image = np.copy(each_image)
+    # grayscale-ify
+    if not is_grayscale(new_image):
+        new_image = cv2.cvtColor(new_image, cv2.COLOR_BGR2GRAY)
+    new_image = crop_resize(new_image, new_image_size)
+    return new_image
 
 def crop_resize(image, new_image_size):
     # shape like (1024,1007,3)
@@ -76,4 +74,7 @@ def only_keep_every_third_pixel(image):
     return img_as_float(image)[shrink]
 
 if __name__=="__main__":
-    get_cropped_and_resized_images('train', 100)
+    train_features, train_labels, test_features = get_train_test()
+    train_features["images"].values
+    
+    # get_cropped_and_resized_images('train', 100)

@@ -6,7 +6,30 @@ from skimage.util import img_as_float
 import matplotlib.pyplot as plt
 import numpy as np
 
-from a_image_preprocessing import only_keep_every_third_pixel
+from a_image_preprocessing import only_keep_every_third_pixel, preprocess_image, get_preprocessed_train_test
+from misc_tools import split_into_columns
+
+def get_hog_train_test(hog_options=None, preprocess_options={}):
+    train_features, train_labels, test_features = get_preprocessed_train_test(**preprocess_options)
+    # hog + flatten
+    transformation = lambda each: hog_feature(each, options=hog_options).flatten()
+    train_features['images'] = train_features['images'].transform(transformation)
+    test_features['images']  = test_features['images'].transform(transformation)
+    # give every feature a column
+    train_features = split_into_columns(train_features, "images")
+    test_features  = split_into_columns(test_features,  "images")
+    return train_features, train_labels, test_features
+
+def get_gabor_train_test(gabor_options=None, preprocess_options={}):
+    train_features, train_labels, test_features = get_preprocessed_train_test(**preprocess_options)
+    # gabor + flatten
+    transformation = lambda each: np.array(gabor_feature(each, options=gabor_options)).flatten()
+    train_features['images'] = train_features['images'].transform(transformation)
+    test_features['images']  = test_features['images'].transform(transformation)
+    # give every feature a column
+    train_features = split_into_columns(train_features, "images")
+    test_features  = split_into_columns(test_features,  "images")
+    return train_features, train_labels, test_features
 
 def hog_feature(image, options=None):
     """
