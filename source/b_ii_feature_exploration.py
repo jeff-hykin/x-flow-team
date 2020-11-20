@@ -15,7 +15,7 @@ import pandas as pd
 import sys
 
 from misc_tools import split_data, get_train_test, images_in, flatten
-from a_image_preprocessing import crop_resize, only_keep_every_third_pixel, preprocess_images
+from a_image_preprocessing import crop_resize, only_keep_every_third_pixel
 from b_i_visual_feature_extraction import power, gabor_plot, gabor_feature, hog_feature
 
 # creates dataframe of features given function and image path
