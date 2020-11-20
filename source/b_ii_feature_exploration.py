@@ -1,47 +1,21 @@
-import matplotlib.pyplot as plt
-import os
-import sys
-import pandas as pd
-import numpy as np
-import cv2
 from csv import reader
-from skimage.util import img_as_float
-from sklearn.feature_selection import SelectKBest
-from sklearn.feature_selection import chi2
-
+from scipy import ndimage as ndi
 from skimage import data, exposure
+from skimage.filters import gabor_kernel
+from skimage.util import img_as_float
+from sklearn.feature_selection import chi2
+from sklearn.feature_selection import mutual_info_classif
+from sklearn.feature_selection import SelectKBest
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy import ndimage as ndi
-from skimage.filters import gabor_kernel
-from sklearn.feature_selection import mutual_info_classif, f_classif
+import os
+import pandas as pd
+import sys
 
-from b_i_visual_feature_extraction import power, gabor_plot, hog_feature
-
-
-def gabor_feature(image):
-    '''
-    image: the 2D image array
-
-    Extract 40 Gabor features, 8 different direction and 5 different frequency
-    '''
-    results = []
-    kernel_params = []
-    # 8 direction
-    for theta in range(8):
-        theta = theta / 4. * np.pi
-        # 5 frequency
-        for frequency in range(1, 10, 2):
-            frequency = frequency * 0.1
-            kernel = gabor_kernel(frequency, theta=theta)
-            params = 'theta=%d,\nfrequency=%.2f' % (
-                theta * 180 / np.pi, frequency)
-            kernel_params.append(params)
-            # Save power image for each image
-            results.append(power(image, kernel))
-    return results
-
-
+from misc_tools import split_data, get_train_test
+from a_image_preprocessing import crop_resize
+from b_i_visual_feature_extraction import power, gabor_plot, gabor_feature, hog_feature
 
 # creates dataframe of features given function and image path
 def create_feature_df(extraction_fuction, name):
@@ -69,7 +43,7 @@ def create_feature_df(extraction_fuction, name):
     return df_feat_classified
 
 
-def visualizeFeatures(name, df_from_csv):
+def visualize_features(name, df_from_csv):
     '''
     name : 'train' or 'test'
     '''
@@ -159,7 +133,7 @@ def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], 
     Calculates anova score of each feature with respect to the covid labels
     Plots results in a scatter plot and image matrix of entropy
     """
-    calc_anova = SelectKBest(score_func=df_classified, k=1)
+    calc_anova = SelectKBest(k=1)
     df_classified = df_classified.dropna()
     # normalization of features in each sample
     feature_data = df_classified.drop(to_drop, axis=1).values
@@ -245,4 +219,4 @@ if __name__ == "__main__":
     print("Plotting categorical data frequency bar charts...")
     categoricalPlots(df_from_csv)
     print("Visualizing image features...")
-    visualizeFeatures("new_train100", df_from_csv)
+    visualize_features("new_train100", df_from_csv)
