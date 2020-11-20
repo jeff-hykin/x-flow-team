@@ -159,7 +159,7 @@ def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], 
     Calculates anova score of each feature with respect to the covid labels
     Plots results in a scatter plot and image matrix of entropy
     """
-    calc_anova = SelectKBest(score_func=f_classif, k=1)
+    calc_anova = SelectKBest(score_func=df_classified, k=1)
     df_classified = df_classified.dropna()
     # normalization of features in each sample
     feature_data = df_classified.drop(to_drop, axis=1).values
