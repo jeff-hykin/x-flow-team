@@ -1,5 +1,6 @@
 import cv2
 import os
+import pandas as pd
 from skimage.util import img_as_float
 import numpy as np
 
@@ -7,9 +8,14 @@ from misc_tools import split_data, get_train_test, images_in, flatten, is_graysc
 
 def get_preprocessed_train_test(**kwargs):
     train_features, train_labels, test_features = get_train_test()
+    # image preprocessing
     transformation = lambda each: preprocess_image(each, **kwargs)
     train_features['images'] = train_features['images'].transform(transformation)
     test_features['images'] = test_features['images'].transform(transformation)
+    # catagorical preprocessing (one hot encoding)
+    columns_to_onehot_encode = ['gender', 'location']
+    train_features = pd.get_dummies(train_features, columns=columns_to_onehot_encode)
+    test_features  = pd.get_dummies(test_features,  columns=columns_to_onehot_encode)
     return train_features, train_labels, test_features
 
 def preprocess_image(each_image, new_image_size=100):
