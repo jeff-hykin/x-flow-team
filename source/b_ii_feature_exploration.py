@@ -14,9 +14,9 @@ import os
 import pandas as pd
 import sys
 
-from misc_tools import split_data, get_train_test, images_in, flatten
-from a_image_preprocessing import crop_resize, only_keep_every_third_pixel
-from b_i_visual_feature_extraction import power, gabor_plot, gabor_feature, hog_feature
+from misc_tools import images_in, flatten, get_train_test
+from a_image_preprocessing import only_keep_every_third_pixel
+from b_i_visual_feature_extraction import get_hog_train_test, get_gabor_train_test
 
 # creates dataframe of features given function and image path
 def create_feature_df(extraction_fuction, image_folder_name):
@@ -38,61 +38,64 @@ def create_feature_df(extraction_fuction, image_folder_name):
 
     return df_feat_classified
 
-
-def visualize_features(name, df_from_csv):
+def visualize_features(name, features_df, labels_df, *other_args):
     '''
-    name : 'train' or 'test'
+    ex:
+        visualize_features("Gabor", *get_gabor_train_test())
+        visualize_features("Hog", *get_hog_train_test())
     '''
-    shrink = (slice(0, None, 3), slice(0, None, 3))
-    path_to_images = name + '/'
-    gabor_data = []
-    hog_data = []
-    # for each image, get features and append to array
-    for i in os.listdir(path_to_images):
-        image_file = path_to_images + i
-        image_file = cv2.imread(image_file, 0)
-        image = img_as_float(image_file)[shrink]
-        # makes dataframe row with filename and image features, and flattens each feature
-        gabor_data.append([i] + list(np.array(gabor_feature(image)).flatten()))
-        hog_data.append([i] + list(np.array(hog_feature(image)).flatten()))
-    # make dataframes and then calculate evaluation metrics
-    df_gabor = pd.DataFrame(gabor_data)
-    df_gabor_classified = df_gabor.merge(
-        df_from_csv[['filename', 'covid(label)']], left_on=0, right_on="filename")
-    print("Dataframe with Gabor features and classification")
-    print(df_gabor_classified.head())
-    mutual_info_metric(df_gabor_classified, "Gabor Mutual Info Metrics")
-    anova_metric(df_gabor_classified, "Gabor Anova Metrics")
-    # HoG metrics
-    df_hog = pd.DataFrame(hog_data)
-    df_hog_classified = df_hog.merge(
-        df_from_csv[['filename', 'covid(label)']], left_on=0, right_on="filename")
-    print("Dataframe with HoG features and classification")
-    print(df_hog_classified.head())
-    mutual_info_metric(df_hog_classified, "HoG Mutual Info Metrics")
-    anova_metric(df_hog_classified, "HoG Anova Metrics")
+    # add the label 
+    features_df = pd.DataFrame.copy(features_df)
+    features_df['covid(label)'] = labels_df['covid(label)']
+    
+    # calculate evaluation metrics
+    print(features_df.head())
+    
+    try:
+        mutual_info_metric(features_df, f"{name} Mutual Info Metrics", )
+    except Exception as error:
+        print(f"Error when computing mutual_info_metric() for {name}")
+        print(error)
+    
+    try:
+        anova_metric(features_df, f"{name} Anova Metrics")
+    except Exception as error:
+        print(f"Error when computing anova_metric() for {name}")
+        print(error)
+        
+    print("")
 
 def chi2_metric(df_classified, title):
     """
     Calculates chi2 score of each feature with respect to the covid labels
     Plots results in a scatter plot
     """
+    to_drop = [0, 'filename', 'covid(label)']
+    to_drop = [item for item in to_drop if item in list(df_classified)]
+    
     calc_chi2 = SelectKBest(score_func=chi2, k=4)
-    df_chi2 = calc_chi2.fit(df_classified.drop(
-        [0, 'filename', 'covid(label)'], axis=1), df_classified[['covid(label)']].values)
-    plt.scatter(df_classified.drop(
-        [0, 'filename', 'covid(label)'], axis=1).columns, df_chi2.scores_, alpha=0.3)
+    df_chi2 = calc_chi2.fit(
+        df_classified.drop(to_drop, axis=1),
+        df_classified[['covid(label)']].values
+    )
+    plt.scatter(
+        df_classified.drop(to_drop, axis=1).columns,
+        df_chi2.scores_,
+        alpha=0.3
+    )
     plt.xlabel("Feature")
     plt.ylabel("Chi2")
     plt.title(title)
     plt.show()
 
-
-def mutual_info_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], genImage=True):
+def mutual_info_metric(df_classified, title, to_drop=None, gen_image=True):
     """
     Calculates mutual_info score of each feature with respect to the covid labels
     Plots results in a scatter plot and image matrix of entropy
     """
+    # remove all the string columns or later calculations will fail
+    if to_drop is None:
+        to_drop = [ each for each in list(df_classified.columns) if type(each) != str ]
     calc_mutual_info = SelectKBest(score_func=mutual_info_classif, k=1)
     df_classified = df_classified.dropna()
     # normalization of features in each sample
@@ -103,32 +106,41 @@ def mutual_info_metric(df_classified, title, to_drop=[0, 'filename', 'covid(labe
     label = df_classified[['covid(label)']].values.ravel()
 
     df_mutual_info = calc_mutual_info.fit(feature_data, label)
-#     df_mutual_info = calc_mutual_info.fit(df_classified.drop(
-#         to_drop, axis=1), df_classified[['covid(label)']].values.ravel())
-    # print(df_mutual_info.scores_)
+    
     plt.figure()
-    plt.scatter(df_classified.drop(
-        to_drop, axis=1).columns, df_mutual_info.scores_, alpha=0.3)
+    plt.scatter(
+        df_classified.drop(to_drop, axis=1).columns,
+        df_mutual_info.scores_,
+        alpha=0.3
+    )
     plt.xlabel("Feature")
     plt.xticks(rotation=90)
     plt.ylabel("mutual_info")
     plt.title(title)
     plt.show()
     
-    if genImage:
-        # show the conditional entropy as an image matrix
-        length = int(np.sqrt(df_mutual_info.scores_.shape[0]))
-        tem = np.reshape(df_mutual_info.scores_, (length, length))
-        plt.figure()
-        plt.imshow(tem, cmap=plt.cm.gray)
-        plt.title(title + "as image")
-        plt.show()
+    if gen_image:
+        try:
+            # show the conditional entropy as an image matrix
+            length = int(np.sqrt(df_mutual_info.scores_.shape[0]))
+            tem = np.reshape(df_mutual_info.scores_, (length, length))
+            plt.figure()
+            plt.imshow(tem, cmap=plt.cm.gray)
+            plt.title(title + "as image")
+            plt.show()
+        except Exception as error:
+            print(f"Error when trying to generate image for {title}")
+            print(error)
+            print()
 
-def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], genImage=True):
+def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], gen_image=True):
     """
     Calculates anova score of each feature with respect to the covid labels
     Plots results in a scatter plot and image matrix of entropy
     """
+    # drop all the string 
+    to_drop = to_drop + [ each for each in list(df_classified.columns) if type(each) != str ]
+    to_drop = [item for item in to_drop if item in list(df_classified)]
     calc_anova = SelectKBest(k=1)
     df_classified = df_classified.dropna()
     # normalization of features in each sample
@@ -139,22 +151,22 @@ def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], 
     label = df_classified[['covid(label)']].values.ravel()
 
     df_anova = calc_anova.fit(feature_data, label)
-#     df_anova = calc_anova.fit(df_classified.drop(
-#         to_drop, axis=1), df_classified[['covid(label)']].values.ravel())
-    # print(df_anova.scores_)
     plt.figure()
-    plt.scatter(df_classified.drop(
-        to_drop, axis=1).columns, df_anova.scores_, alpha=0.3)
+    plt.scatter(
+        df_classified.drop(to_drop, axis=1).columns,
+        df_anova.scores_,
+        alpha=0.3
+    )
     plt.xlabel("Feature")
     plt.xticks(rotation=90)
     plt.ylabel("anova")
     plt.title(title)
     plt.show()
     
-    if genImage:
+    if gen_image:
         # show the conditional entropy as an image matrix
-        length = int(np.sqrt(df_mutual_info.scores_.shape[0]))
-        tem = np.reshape(df_mutual_info.scores_, (length, length))
+        length = int(np.sqrt(df_classified.scores_.shape[0]))
+        tem = np.reshape(df_classified.scores_, (length, length))
         plt.figure()
         plt.imshow(tem, cmap=plt.cm.gray)
         plt.title(title + "as image")
@@ -202,17 +214,21 @@ def get_countries(df):
 
 
 if __name__ == "__main__":
-    # df_from_csv = pd.read_csv(os.path.join(sys.path[0], 'train.csv')).fillna(-1)
-    df_from_csv = pd.read_csv(os.path.join(sys.path[0], 'train.csv'))
-    print(df_from_csv.head())
-    df_from_csv = interpolate_data(df_from_csv)
+    train_features_df, train_labels_df, test_features_df = get_train_test()
+    train_features_df = train_features_df.drop("images","columns")
+    train_features_df['covid(label)'] = train_labels_df['covid(label)']
+    train_features_df = interpolate_data(train_features_df)
+    one_hot_csv = pd.get_dummies(train_features_df, columns=['gender', 'location'])
+    
+    print(train_features_df.head())
     # One hot encoding for countries and gender
-    one_hot_csv = pd.get_dummies(df_from_csv, columns=['gender', 'location'])
-    print("Plotted csv information with mutual_information")
-    mutual_info_metric(one_hot_csv, "CSV Information", ['filename', 'covid(label)'], False)
-    print("Plotted csv information with anova")
-    anova_metric(one_hot_csv, "CSV Information", ['filename', 'covid(label)'], False)
-    print("Plotting categorical data frequency bar charts...")
-    categorical_plots(df_from_csv)
-    print("Visualizing image features...")
-    visualize_features("new_train100", df_from_csv)
+    print("\nPlotted csv information with mutual_information")
+    mutual_info_metric(one_hot_csv, "CSV Information", ['covid(label)'], False)
+    print("\nPlotted csv information with anova")
+    anova_metric(one_hot_csv, "CSV Information", ['covid(label)'], False)
+    print("\nPlotting categorical data frequency bar charts...")
+    categorical_plots(train_features_df)
+    print("\nVisualizing HoG features...")
+    visualize_features("HoG", *get_hog_train_test())
+    print("\nVisualizing Gabor features...")
+    visualize_features("Gabor", *get_gabor_train_test())

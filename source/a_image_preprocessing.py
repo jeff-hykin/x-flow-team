@@ -7,21 +7,42 @@ import numpy as np
 from misc_tools import split_data, get_train_test, images_in, flatten, is_grayscale, list_of_images_to_dataframe
 
 def get_preprocessed_train_test(**kwargs):
+    """
+    (options can change these)
+    1. drops any rows with NA values
+    2. preprocess_images with crop+resize
+    3. one-hot encodes gender and location
+    
+    options:
+        onehots: a list of which columns to one-hotify
+        dropna: set to False to keep all the rows that contain NA values
+        image_options: {
+            new_image_size: (default 100),
+            make_grayscale: (default True)
+        }
+    """
     train_features, train_labels, test_features = get_train_test()
+    
+    # drop na values unless explicitly turned off
+    if not kwargs.get("dropna", True):
+        train_features['covid(label)'] = train_labels['covid(label)']
+        train_features = train_features.dropna()
+        train_labels = pd.DataFrame(train_features['covid(label)'])
+    
     # image preprocessing
-    transformation = lambda each: preprocess_image(each, **kwargs)
+    transformation = lambda each: preprocess_image(each, **kwargs.get("image_options",{}))
     train_features['images'] = train_features['images'].transform(transformation)
     test_features['images'] = test_features['images'].transform(transformation)
     # catagorical preprocessing (one hot encoding)
-    columns_to_onehot_encode = ['gender', 'location']
+    columns_to_onehot_encode = kwargs.get("onehots", ['gender', 'location'])
     train_features = pd.get_dummies(train_features, columns=columns_to_onehot_encode)
     test_features  = pd.get_dummies(test_features,  columns=columns_to_onehot_encode)
     return train_features, train_labels, test_features
 
-def preprocess_image(each_image, new_image_size=100):
+def preprocess_image(each_image, new_image_size=100, make_grayscale=True):
     new_image = np.copy(each_image)
     # grayscale-ify
-    if not is_grayscale(new_image):
+    if make_grayscale and not is_grayscale(new_image):
         new_image = cv2.cvtColor(new_image, cv2.COLOR_BGR2GRAY)
     new_image = crop_resize(new_image, new_image_size)
     return new_image
