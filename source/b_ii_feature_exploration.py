@@ -42,7 +42,6 @@ def gabor_feature(image):
     return results
 
 
-
 # creates dataframe of features given function and image path
 def create_feature_df(extraction_fuction, name):
     df_from_csv = pd.read_csv(os.path.join(sys.path[0], 'train.csv')).fillna(0)
@@ -55,7 +54,8 @@ def create_feature_df(extraction_fuction, name):
         image_file = cv2.imread(image_file, 0)
         image = img_as_float(image_file)[shrink]
         # makes dataframe row with filename and image features, and flattens each feature
-        feature_data.append([i] + list(np.array(extraction_fuction(image)).flatten()))
+        feature_data.append(
+            [i] + list(np.array(extraction_fuction(image)).flatten()))
     df_feat = pd.DataFrame(feature_data)
     # print(df_feat.keys())
     # print(feature_data[0])
@@ -64,7 +64,6 @@ def create_feature_df(extraction_fuction, name):
         df_from_csv[['filename', 'covid(label)']], left_on=0, right_on="filename")
     # print(df_feat_classified.keys())
     df_feat_classified.drop([0, 'filename'], axis=1, inplace=True)
-
 
     return df_feat_classified
 
@@ -102,6 +101,7 @@ def visualizeFeatures(name, df_from_csv):
     mutual_info_metric(df_hog_classified, "HoG Mutual Info Metrics")
     anova_metric(df_hog_classified, "HoG Anova Metrics")
 
+
 def chi2_metric(df_classified, title):
     """
     Calculates chi2 score of each feature with respect to the covid labels
@@ -109,10 +109,11 @@ def chi2_metric(df_classified, title):
     """
     calc_chi2 = SelectKBest(score_func=chi2, k=4)
     df_chi2 = calc_chi2.fit(df_classified.drop(
-        [0, 'filename', 'covid(label)'], axis=1), df_classified[['covid(label)']].values)
+        ['filename', 'covid(label)'], axis=1), df_classified[['covid(label)']].values)
     plt.scatter(df_classified.drop(
-        [0, 'filename', 'covid(label)'], axis=1).columns, df_chi2.scores_, alpha=0.3)
+        ['filename', 'covid(label)'], axis=1).columns, df_chi2.scores_, alpha=0.3)
     plt.xlabel("Feature")
+    plt.xticks(rotation=90)
     plt.ylabel("Chi2")
     plt.title(title)
     plt.show()
@@ -144,7 +145,7 @@ def mutual_info_metric(df_classified, title, to_drop=[0, 'filename', 'covid(labe
     plt.ylabel("mutual_info")
     plt.title(title)
     plt.show()
-    
+
     if genImage:
         # show the conditional entropy as an image matrix
         length = int(np.sqrt(df_mutual_info.scores_.shape[0]))
@@ -153,6 +154,7 @@ def mutual_info_metric(df_classified, title, to_drop=[0, 'filename', 'covid(labe
         plt.imshow(tem, cmap=plt.cm.gray)
         plt.title(title + "as image")
         plt.show()
+
 
 def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], genImage=True):
     """
@@ -169,26 +171,70 @@ def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], 
     label = df_classified[['covid(label)']].values.ravel()
 
     df_anova = calc_anova.fit(feature_data, label)
-#     df_anova = calc_anova.fit(df_classified.drop(
-#         to_drop, axis=1), df_classified[['covid(label)']].values.ravel())
-    # print(df_anova.scores_)
     plt.figure()
     plt.scatter(df_classified.drop(
         to_drop, axis=1).columns, df_anova.scores_, alpha=0.3)
+    plt.hlines(14, 0, len(df_classified.drop(
+        to_drop, axis=1).columns))
+    plt.yscale("log")
     plt.xlabel("Feature")
     plt.xticks(rotation=90)
     plt.ylabel("anova")
     plt.title(title)
     plt.show()
-    
+
     if genImage:
         # show the conditional entropy as an image matrix
-        length = int(np.sqrt(df_mutual_info.scores_.shape[0]))
-        tem = np.reshape(df_mutual_info.scores_, (length, length))
+        length = int(np.sqrt(df_anova.scores_.shape[0]))
+        tem = np.reshape(df_anova.scores_, (length, length))
         plt.figure()
         plt.imshow(tem, cmap=plt.cm.gray)
         plt.title(title + "as image")
         plt.show()
+
+
+def findConditionalEntropy(data, col):
+    total = len(data)
+    fractions = []
+    ce = []
+    for i in data[col].unique():
+        bcount = data[data[col] == i]
+        bcount = len(bcount[bcount[['covid(label)']] == 0])
+        mcount = data[data[col] == i]
+        mcount = len(mcount[mcount[['covid(label)']] == 1])
+        part = bcount + mcount
+        bpart = 0
+        mpart = 0
+        if part != 0:
+            bpart = bcount / part
+            mpart = mcount / part
+        logb = 0
+        logm = 0
+        if bpart != 0:
+            logb = np.log2(bpart)
+        if mpart != 0:
+            logm = np.log2(mpart)
+        fractions.append(part)
+        ce.append(-(bpart * logb + (mpart) * logm))
+    fractions = np.array(fractions) / total
+    return np.sum(fractions * np.array(ce))
+
+
+def cond_entropy_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], genImage=True):
+    cond_entropy_vals = []
+    for i in df_classified.drop(
+            to_drop, axis=1).columns:
+        cond_entropy_vals.append(findConditionalEntropy(df_classified, i))
+
+    plt.figure()
+    plt.scatter(df_classified.drop(
+        to_drop, axis=1).columns, cond_entropy_vals, alpha=0.3)
+    plt.xlabel("Feature")
+    plt.xticks(rotation=90)
+    plt.ylabel("entropy")
+    plt.title(title)
+    plt.show()
+
 
 def categoricalPlots(data):
     '''
@@ -198,36 +244,46 @@ def categoricalPlots(data):
     label_count = list(data.groupby(["covid(label)"]).count()["age"])
     plt.bar(["Negative", "Positive"], label_count)
     plt.show()
-    data['age'] = (data['age'] // 10 * 10).astype(int).astype(str) + "-" + (data['age'] // 10 * 10 + 9).astype(int).astype(str)
+    data['age'] = (data['age'] // 10 * 10).astype(int).astype(str) + \
+        "-" + (data['age'] // 10 * 10 + 9).astype(int).astype(str)
     for i in data.columns[1:-1]:
-        pd.crosstab(data[i], data['covid(label)']).plot(kind='bar', stacked=False)
+        pd.crosstab(data[i], data['covid(label)']).plot(
+            kind='bar', stacked=False)
         plt.title(i)
         plt.legend(["Negative", "Positive"])
         plt.xlabel("Category")
         plt.ylabel("Count")
         plt.show()
 
+
 def interpolateCategories(series):
     # from https://stackoverflow.com/questions/43586058/pandas-interpolate-with-nearest-for-non-numeric-values
     fact = series.astype('category').factorize()
 
-    series_cat = pd.Series(fact[0]).replace(-1, np.nan) # get string as categorical (-1 is NaN)
-    series_cat_interp = series_cat.interpolate("nearest") # interpolate categorical
+    # get string as categorical (-1 is NaN)
+    series_cat = pd.Series(fact[0]).replace(-1, np.nan)
+    series_cat_interp = series_cat.interpolate(
+        "nearest")  # interpolate categorical
 
-    cat_to_string = {i:x for i,x in enumerate(fact[1])} # dict connecting category to string
-    series_str_interp = series_cat_interp.map(cat_to_string) # turn category back to string
+    # dict connecting category to string
+    cat_to_string = {i: x for i, x in enumerate(fact[1])}
+    series_str_interp = series_cat_interp.map(
+        cat_to_string)  # turn category back to string
 
     return series_str_interp
-    
+
+
 def interpolateData(df):
     df[['age']] = df[['age']].fillna(df['age'].mean(skipna=True))
     df = getCountries(df)
     return df
 
+
 def getCountries(df):
     # take the last word from the location values, to get the countries
     df = df.interpolate().apply(interpolateCategories)
-    df['location']=df['location'].str.split(",").str[-1].str.strip()
+    df['location'] = df['location'].str.split(",").str[-1].str.strip()
+    df['covid(label)'] = df['covid(label)'].astype('category')
     return df
 
 
@@ -239,9 +295,13 @@ if __name__ == "__main__":
     # One hot encoding for countries and gender
     one_hot_csv = pd.get_dummies(df_from_csv, columns=['gender', 'location'])
     print("Plotted csv information with mutual_information")
-    mutual_info_metric(one_hot_csv, "CSV Information", ['filename', 'covid(label)'], False)
+    mutual_info_metric(one_hot_csv, "CSV Information", [
+                       'filename', 'covid(label)'], False)
+    # print("Plotted csv information with chi2")
+    # chi2_metric(one_hot_csv, "CSV Information")
     print("Plotted csv information with anova")
-    anova_metric(one_hot_csv, "CSV Information", ['filename', 'covid(label)'], False)
+    anova_metric(one_hot_csv, "CSV Information", [
+                 'filename', 'covid(label)'], False)
     print("Plotting categorical data frequency bar charts...")
     categoricalPlots(df_from_csv)
     print("Visualizing image features...")
