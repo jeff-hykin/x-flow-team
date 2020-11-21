@@ -1,5 +1,6 @@
 from collections import Counter # frequency count
 from csv import reader
+import numpy
 from scipy import ndimage as ndi
 from skimage import data, exposure
 from skimage.filters import gabor_kernel
@@ -19,11 +20,14 @@ import sys
 relative_path = lambda *filepath_peices : os.path.join(os.path.dirname(__file__), *filepath_peices)
 
 data = ()
-def get_train_test():
+def get_train_test(train_path="train", test_path="test"):
     """
+    ex:
+        train_features, train_labels, test_features = get_train_test()
+    
     returns train_features, train_labels, test_features
     They're dataframes
-    Also the train_features["images"] are the list of images
+    Also train_features["images"] is a list of images
     """
     global data
     # if data hasn't been loaded
@@ -37,7 +41,7 @@ def get_train_test():
         training_inputs = training_df.drop("covid(label)", axis="columns")
         training_inputs["images"] = training_inputs["filename"].transform(
             # convert to grayscale because they're basically already grayscale
-            lambda each_filename: cv2.imread(relative_path("train", each_filename), 0)
+            lambda each_filename: cv2.imread(relative_path(train_path, each_filename), 0)
         )
         training_inputs = training_inputs.drop("filename", axis="columns")
         
@@ -49,13 +53,14 @@ def get_train_test():
         # test_labels = None, yup no testing labels
         test_inputs["images"] = test_inputs["filename"].transform(
             # convert to grayscale because they're basically already grayscale
-            lambda each_filename: cv2.imread(relative_path("test", each_filename), 0)
+            lambda each_filename: cv2.imread(relative_path(test_path, each_filename), 0)
         )
         test_inputs = test_inputs.drop("filename", axis="columns")
         
-        data = (training_inputs, training_labels, test_inputs)
+        data = (training_inputs, pd.DataFrame(training_labels), test_inputs)
     
-    return data
+    # always return a copy
+    return tuple([ pd.DataFrame.copy(each) for each in data])
 
 def conditional_entropy(feature_data, labels):
     if type(feature_data) == dict:
@@ -129,3 +134,56 @@ def split_data(data, ratio=0.5):
 
         
     return data_split
+
+def flatten(iterable):
+    return list(np.array(iterable).flatten())
+
+def images_in(foldername, include_filename=False):
+    """
+    returns [image1,image2, ...] (each image is a numpy array)
+    if include_filename=True
+        returns [ (filename1, image1), (filename2, image2), ... ]
+    """
+    images = []
+    for each_image_filename in os.listdir(foldername):
+        image_path = os.path.join(foldername, each_image_filename)
+        if include_filename:
+            images.append((each_image_filename, cv2.imread(image_path, 0)))
+        else:
+            images.append(cv2.imread(image_path, 0))
+    return images
+
+def is_grayscale(image):
+    as_numpy_array = numpy.array(image)
+    if len(as_numpy_array.shape) == 3:
+        if as_numpy_array.shape[2] >= 3:
+            return False
+    return True
+
+def split_into_columns(dataframe, column_name):
+    feature_list = dataframe[column_name].tolist()
+    new_column_names = list(range(len(feature_list[0])))
+    dataframe[new_column_names] = pd.DataFrame(feature_list, index=dataframe.index)
+    new_dataframe = pd.DataFrame(dataframe[column_name].to_list(), columns=new_column_names)
+    for each_column in dataframe.drop(column_name, "columns").columns:
+        new_dataframe[each_column] = dataframe[each_column]
+    return new_dataframe
+
+def list_of_images_to_dataframe(list_of_images):
+    flattened = [ np.array(each_image).flatten() for each_image in list_of_images ]
+    big_array = np.array(flattened)
+    dict_of_feature_lists = {
+        each_index: each_feature_colum for each_index, each_feature_colum in enumerate(big_array.transpose())
+    }
+    # here's what that'd look like
+    # (each image is visually column here)
+    #         image1, image2, image3, ...
+    # {
+    #    0: [ 0.324,  0.324,  0.324,  ... ]
+    #    1: [ 0.324,  0.324,  0.324,  ... ]
+    #    2: [ 0.324,  0.324,  0.324,  ... ]
+    #    3: [ 0.324,  0.324,  0.324,  ... ]
+    #    4: [ 0.324,  0.324,  0.324,  ... ]
+    # }
+    # but in the data frame the 0: 1: 2: 3: will be the columns, with each row being a feature
+    return pd.DataFrame(dict_of_feature_lists)

@@ -17,7 +17,8 @@ from sklearn.model_selection import cross_val_score, train_test_split
 import time
 
 from misc_tools import split_data
-from b_ii_feature_exploration import hog_feature, create_feature_df
+from b_i_visual_feature_extraction import hog_feature
+from b_ii_feature_exploration import create_feature_df
 
 
 # https://www.codespeedy.com/sequential-forward-selection-with-python-and-scikit-learn/
