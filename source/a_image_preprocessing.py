@@ -4,7 +4,7 @@ import pandas as pd
 from skimage.util import img_as_float
 import numpy as np
 
-from misc_tools import split_data, get_train_test, images_in, flatten, is_grayscale, list_of_images_to_dataframe
+from misc_tools import get_train_test, is_grayscale
 
 def get_preprocessed_train_test(**kwargs):
     """

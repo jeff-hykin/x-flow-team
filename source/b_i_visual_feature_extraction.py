@@ -15,18 +15,43 @@ def get_hog_train_test(hog_options={}, preprocess_options={}):
     transformation = lambda each: hog_feature(each, **hog_options).flatten()
     train_features['images'] = train_features['images'].transform(transformation)
     test_features['images']  = test_features['images'].transform(transformation)
-    # give every feature a column
+    # give every image-feature its own column (a lot of columns)
     train_features = split_into_columns(train_features, "images")
     test_features  = split_into_columns(test_features,  "images")
     return train_features, train_labels, test_features
 
 def get_gabor_train_test(gabor_options={}, preprocess_options={}):
     train_features, train_labels, test_features = get_preprocessed_train_test(**preprocess_options)
+    
+    # 
+    # create a progress bar cause its really slow
+    # 
+    # (function doesn't touch the data, just passes the data through while keeping count)
+    image_count = 0
+    image_total = len(train_features['images']) + len(test_features['images'])
+    def progress_notouch(arg):
+        nonlocal image_count, image_total
+        image_count += 1
+        percent = (image_count/image_total)*100
+        width = 30 # characters
+        left = width * percent // 100
+        right = width - left
+        print(
+            '\r[', '#' * int(left), ' ' * int(right), ']',
+            f' {percent:.0f}%',
+            sep='',
+            end='',
+            flush=True
+        )
+        # just pass the data through without touching it
+        return arg
+    
     # gabor + flatten
-    transformation = lambda each: np.array(gabor_feature(each, **gabor_options)).flatten()
+    flatten = lambda *m: (i for n in m for i in (flatten(*n) if isinstance(n, (tuple, list)) else (n,)))
+    transformation = lambda each: progress_notouch(list(flatten(gabor_feature(each, **gabor_options))))
     train_features['images'] = train_features['images'].transform(transformation)
     test_features['images']  = test_features['images'].transform(transformation)
-    # give every feature a column
+    # give every image-feature its own column (a lot of columns)
     train_features = split_into_columns(train_features, "images")
     test_features  = split_into_columns(test_features,  "images")
     return train_features, train_labels, test_features

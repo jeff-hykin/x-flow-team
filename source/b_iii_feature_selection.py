@@ -16,8 +16,8 @@ from sklearn import svm
 from sklearn.model_selection import cross_val_score, train_test_split
 import time
 
-from misc_tools import split_data
-from b_i_visual_feature_extraction import hog_feature
+from misc_tools import split_data, auto_cache
+from b_i_visual_feature_extraction import hog_feature, get_hog_train_test, get_gabor_train_test
 from b_ii_feature_exploration import create_feature_df
 
 
@@ -98,7 +98,7 @@ def fischer_criterion(data, d):
 def fischer_criterion_selection(data, feature_counts):
     '''
     inputs: DataFrame including features and labels ('classes'),
-                    list with different numbers of features to test with,
+            list with different numbers of features to test with,
     output: list of features chosen,
     '''
     # split training data into validation and training subsets
@@ -117,12 +117,12 @@ def fischer_criterion_selection(data, feature_counts):
     print('Ordered', len(features_and_scores), 'features with fischer scores')
 
     # run validation subset for different feature counts
-    val_labels = validation_data['covid(label)'].copy()
+    val_labels   = validation_data['covid(label)'].copy()
     train_labels = train_data['covid(label)'].copy()
     best_features = {'accuracy': 0, 'count': 0}
     previous_number_of_features = 1 # avoid starting with empty dataframe
     feature, score = features_and_scores[0] # extract feature as f
-    val_features = pd.DataFrame(validation_data[feature]) # make dataframe
+    val_features   = pd.DataFrame(validation_data[feature]) # make dataframe
     train_features = pd.DataFrame(train_data[feature]) # make dataframe
 
     # test for different numbers of features
@@ -160,38 +160,52 @@ def fischer_criterion_selection(data, feature_counts):
 if __name__ == "__main__":
     # hyperparameter for both - list of feature counts to test
 
-    print('Obtaining features...')
-    feature_counts = [15, 25, 35, 40]
+    print('#')
+    print('#  Loading Data')
+    print('#')
     df_hog = create_feature_df(hog_feature, 'new_train100') # 1157 features...
+    print('loaded df_hog')
+    # this handles image preprocessing and one-hot encoding
+    train_features_hog, train_labels_hog, test_features_hog = auto_cache(get_hog_train_test)
+    print('loaded train_features_hog')
+    train_features_hog['covid(label)'] = train_labels_hog['covid(label)']
+    train_features_gabor, train_labels_gabor, test_features_gabor = auto_cache(get_gabor_train_test)
+    print('loaded train_features_gabor')
+    train_features_gabor['covid(label)'] = train_labels_gabor['covid(label)']
+    
+    feature_counts = [1, 2, 5, 15, 25, 35, 40]
 
-
-    print('Running feature selection algorithms...')
     print('#')
     print('#  Filter: Fischer Criterion')
     print('#')
     # filter feature selection - fischer testing with different feature counts
-    fc_features = fischer_criterion_selection(df_hog, feature_counts)
+    fc_features = fischer_criterion_selection(train_features_hog, feature_counts)
+    print('fc_features = ', fc_features)
+    # create DataFrame for FC feature choices
+    df_fc_X = pd.DataFrame(train_features_hog[fc_features[0]])
+    for feature in fc_features:
+        df_fc_X = df_fc_X.join(train_features_hog[feature]) # add to dataframe
+    print('df_fc_X = ', df_fc_X)
+    
     # wrapper feature selection - sequential forward selection for multiple subsets
     print('#')
     print('#  Wrapper: SFS')
     print('#')
     num_tests = 5 # hyperparameter - cv folds
-    sfs_features = sequential_forward_selection(df_hog, num_tests, feature_counts)
-    
+    sfs_features = sequential_forward_selection(train_features_hog, num_tests, feature_counts)
+    print('sfs_features = ', sfs_features)
     # create DataFrame for SFS feature choices
-    df_sfs_X = pd.DataFrame(df_hog[sfs_features[0]])
+    df_sfs_X = pd.DataFrame(train_features_hog[sfs_features[0]])
     for feature in sfs_features[1:]:
-        df_sfs_X = df_sfs_X.join(df_hog[feature]) # add to dataframe
-    # create DataFrame for FC feature choices
-    df_fc_X = pd.DataFrame(df_hog[fc_features[0]])
-    for feature in fc_features:
-        df_fc_X = df_fc_X.join(df_hog[feature]) # add to dataframe
-
+        df_sfs_X = df_sfs_X.join(train_features_hog[feature]) # add to dataframe
+    print('df_sfs_X = ', df_sfs_X)
+    
+    print('#')
+    print('#  Wrapper vs Filter')
+    print('#')
     # create DataFrame for labels
-    df_Y = df_hog['covid(label)'].copy()
-
+    df_Y = train_features_hog['covid(label)'].copy()
     # run svm with cross validation for both sets of features
-    print('Testing SVMs for SFS and FC...')
     clf_sfs    = svm.SVC(kernel='linear', C=1)
     clf_fc     = svm.SVC(kernel='linear', C=1)
     start_sfc  = time.time()
