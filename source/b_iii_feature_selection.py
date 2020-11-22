@@ -204,7 +204,7 @@ def compare(selected_features_1_df, selected_features_2_df, labels_df):
     
     return sfs_time, scores_sfs, fc_time, scores_fc
 
-def run_filter_vs_wrapper_competition(features_df, labels_df, feature_count):
+def run_filter_vs_wrapper_competition(features_df, labels_df, feature_counts):
     # add label to the features since that's what some other functions expect
     features_df = features_df.copy()
     features_df['covid(label)'] = labels_df['covid(label)']
