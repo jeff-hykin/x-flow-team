@@ -176,6 +176,11 @@ def wrapper_process(features_with_labels_df, feature_counts):
     print('#')
     num_tests = 5 # hyperparameter - cv folds
     wrapper_features = sequential_forward_selection(features_with_labels_df, num_tests, feature_counts)
+    
+    # this 'if' happens when the process is interupted
+    if len(wrapper_features) == 0:
+        exit()
+        
     print('wrapper_features = ', wrapper_features)
     optimized_wrapper_df = pd.DataFrame({})
     for feature in wrapper_features:
@@ -211,7 +216,9 @@ def run_filter_vs_wrapper_competition(features_df, labels_df, feature_counts):
     
     # compute which features are the most helpful
     filter_features, optimized_filter_df = auto_cache(filter_process, features_df, feature_counts)
+    print('filter_features = ', filter_features)
     wrapper_features, optimized_wrapper_df = auto_cache(wrapper_process, features_df, feature_counts)
+    print('wrapper_features = ', wrapper_features)
     
     # see which performed better in cross validation using an SVM model
     sfs_time, scores_sfs, fc_time, scores_fc = compare(
