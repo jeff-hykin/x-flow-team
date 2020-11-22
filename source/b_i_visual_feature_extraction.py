@@ -29,7 +29,7 @@ def get_gabor_train_test(gabor_options={}, preprocess_options={}):
     # (function doesn't touch the data, just passes the data through while keeping count)
     image_count = 0
     image_total = len(train_features['images']) + len(test_features['images'])
-    def progress_notouch(arg):
+    def progress(arg):
         nonlocal image_count, image_total
         image_count += 1
         percent = (image_count/image_total)*100
@@ -43,12 +43,15 @@ def get_gabor_train_test(gabor_options={}, preprocess_options={}):
             end='',
             flush=True
         )
+        # clean up when last step
+        if image_count == image_total:
+            print("")
         # just pass the data through without touching it
         return arg
     
     # gabor + flatten
     flatten = lambda *m: (i for n in m for i in (flatten(*n) if isinstance(n, (tuple, list)) else (n,)))
-    transformation = lambda each: progress_notouch(list(flatten(gabor_feature(each, **gabor_options))))
+    transformation = lambda each: progress(list(flatten(gabor_feature(each, **gabor_options))))
     train_features['images'] = train_features['images'].transform(transformation)
     test_features['images']  = test_features['images'].transform(transformation)
     # give every image-feature its own column (a lot of columns)

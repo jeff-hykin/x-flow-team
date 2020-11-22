@@ -54,7 +54,7 @@ def sequential_forward_selection(data, num_tests, feature_counts):
         if sfs.k_score_ > best_features['accuracy']: # update best
             best_features = {'accuracy': sfs.k_score_, 'indicies': sfs.k_feature_names_, 'count': number_of_features}
     
-    print('Best SFS features accuracy is', best_features['accuracy'], 'with', best_features['count'], 'features at indicies', best_features['indicies'])
+    print('Best SFS accuracy is', best_features['accuracy'], 'with', best_features['count'], 'features')
     return best_features['indicies']
 
 
@@ -92,8 +92,6 @@ def fischer_criterion(data, d):
         fc = numerator / denomenator
 
     return fc
-
-    
 
 def fischer_criterion_selection(data, feature_counts):
     '''
@@ -137,7 +135,7 @@ def fischer_criterion_selection(data, feature_counts):
         # test with validation set with number_of_features features
         clf = LogisticRegression().fit(train_features, train_labels)
         score = clf.score(val_features, val_labels)
-        print('CV score for', len(train_features), 'features:', score)
+        print('CV score for', number_of_features, 'features:', score)
 
         # if score is better, update
         if score > best_features['accuracy']:
@@ -153,65 +151,105 @@ def fischer_criterion_selection(data, feature_counts):
         optimal_features.append(optimal_feature)
     print('complete')
 
-    print('Best Fischer Criterion features accuracy is', best_features['accuracy'], 'with', best_features['count'], 'features at indicies\n', optimal_features, "\n")
+    print('Best Fischer Criterion accuracy is', best_features['accuracy'], 'with', best_features['count'], 'features')
     return optimal_features
 
-# main function
-if __name__ == "__main__":
-    # hyperparameter for both - list of feature counts to test
-
-    print('#')
-    print('#  Loading Data')
-    print('#')
-    df_hog = create_feature_df(hog_feature, 'new_train100') # 1157 features...
-    print('loaded df_hog')
-    # this handles image preprocessing and one-hot encoding
-    train_features_hog, train_labels_hog, test_features_hog = auto_cache(get_hog_train_test)
-    print('loaded train_features_hog')
-    train_features_hog['covid(label)'] = train_labels_hog['covid(label)']
-    train_features_gabor, train_labels_gabor, test_features_gabor = auto_cache(get_gabor_train_test)
-    print('loaded train_features_gabor')
-    train_features_gabor['covid(label)'] = train_labels_gabor['covid(label)']
-    
-    feature_counts = [1, 2, 5, 15, 25, 35, 40]
-
+def filter_process(features_with_labels_df, feature_counts):
     print('#')
     print('#  Filter: Fischer Criterion')
     print('#')
     # filter feature selection - fischer testing with different feature counts
-    fc_features = fischer_criterion_selection(train_features_hog, feature_counts)
-    print('fc_features = ', fc_features)
+    filter_features = fischer_criterion_selection(features_with_labels_df, feature_counts)
+    print('filter_features = ', filter_features)
     # create DataFrame for FC feature choices
-    df_fc_X = pd.DataFrame(train_features_hog[fc_features[0]])
-    for feature in fc_features:
-        df_fc_X = df_fc_X.join(train_features_hog[feature]) # add to dataframe
-    print('df_fc_X = ', df_fc_X)
+    optimized_filter_df = pd.DataFrame({})
+    for feature in filter_features:
+        optimized_filter_df[feature] = features_with_labels_df[feature]
+    print('optimized_filter_df:\n', optimized_filter_df)
     
+    return filter_features, optimized_filter_df
+
+def wrapper_process(features_with_labels_df, feature_counts):
     # wrapper feature selection - sequential forward selection for multiple subsets
     print('#')
     print('#  Wrapper: SFS')
     print('#')
     num_tests = 5 # hyperparameter - cv folds
-    sfs_features = sequential_forward_selection(train_features_hog, num_tests, feature_counts)
-    print('sfs_features = ', sfs_features)
-    # create DataFrame for SFS feature choices
-    df_sfs_X = pd.DataFrame(train_features_hog[sfs_features[0]])
-    for feature in sfs_features[1:]:
-        df_sfs_X = df_sfs_X.join(train_features_hog[feature]) # add to dataframe
-    print('df_sfs_X = ', df_sfs_X)
+    wrapper_features = sequential_forward_selection(features_with_labels_df, num_tests, feature_counts)
+    print('wrapper_features = ', wrapper_features)
+    optimized_wrapper_df = pd.DataFrame({})
+    for feature in wrapper_features:
+        optimized_wrapper_df[feature] = features_with_labels_df[feature]
+    print('optimized_wrapper_df = ', optimized_wrapper_df)
     
+    return wrapper_features, optimized_wrapper_df
+
+def compare(selected_features_1_df, selected_features_2_df, labels_df):
     print('#')
     print('#  Wrapper vs Filter')
     print('#')
-    # create DataFrame for labels
-    df_Y = train_features_hog['covid(label)'].copy()
+    
     # run svm with cross validation for both sets of features
     clf_sfs    = svm.SVC(kernel='linear', C=1)
     clf_fc     = svm.SVC(kernel='linear', C=1)
-    start_sfc  = time.time()
-    scores_sfs = cross_val_score(clf_sfs, df_sfs_X, df_Y, cv = 5)
-    end_sfc    = time.time()
-    scores_fc  = cross_val_score(clf_fc , df_fc_X , df_Y, cv = 5)
-    end_fc     = time.time()
+    
+    # sfs
+    start  = time.time()
+    scores_sfs = cross_val_score(clf_sfs, selected_features_1_df, labels_df, cv = 5)
+    sfs_time = time.time() - start
+    # fc 
+    start    = time.time()
+    scores_fc  = cross_val_score(clf_fc , selected_features_2_df, labels_df, cv = 5)
+    fc_time = time.time() - start
+    
+    return sfs_time, scores_sfs, fc_time, scores_fc
 
-    print('Completed cross validation with SFS features in', end_sfc - start_sfc, 'with average accuarcy of', np.average(scores_sfs))
+def run_filter_vs_wrapper_competition(features_df, labels_df, feature_count):
+    # add label to the features since that's what some other functions expect
+    features_df = features_df.copy()
+    features_df['covid(label)'] = labels_df['covid(label)']
+    
+    # compute which features are the most helpful
+    filter_features, optimized_filter_df = auto_cache(filter_process, features_df, feature_counts)
+    wrapper_features, optimized_wrapper_df = auto_cache(wrapper_process, features_df, feature_counts)
+    
+    # see which performed better in cross validation using an SVM model
+    sfs_time, scores_sfs, fc_time, scores_fc = compare(
+        selected_features_1_df=optimized_filter_df,
+        selected_features_2_df=optimized_wrapper_df,
+        labels_df=train_labels_hog,
+    )
+    print('Fischer Criterion')
+    print('    score: ', np.average(scores_fc))
+    print('    time: ', fc_time)
+    print('Sequential Forward Selection')
+    print('    score: ', np.average(scores_sfs))
+    print('    time: ', sfs_time)
+    
+    # results
+    return (
+        filter_features,
+        optimized_filter_df,
+        
+        wrapper_features,
+        optimized_wrapper_df,
+        
+        sfs_time,
+        scores_sfs,
+        fc_time,
+        scores_fc
+    )
+    
+# main function
+if __name__ == "__main__":
+    print('#')
+    print('#  Loading Data (~5min max time)')
+    print('#')
+    # these handle image preprocessing and one-hot encoding
+    train_features_hog, train_labels_hog, test_features_hog = auto_cache(get_hog_train_test)
+    train_features_gabor, train_labels_gabor, test_features_gabor = auto_cache(get_gabor_train_test)
+    
+    # compute which features are the most helpful
+    feature_counts = [ 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 20, 23, 25, 27, 35, 40 ]
+    hog_results    = auto_cache(run_filter_vs_wrapper_competition, train_features_hog,   train_labels_hog,   feature_counts)
+    gabor_results  = auto_cache(run_filter_vs_wrapper_competition, train_features_gabor, train_labels_gabor, feature_counts)

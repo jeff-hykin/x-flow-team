@@ -241,6 +241,9 @@ def hash_decorator(hash_function):
             sorted_iterable = list(value.items())
             sorted_iterable.sort()
             output = tuple([ make_hashable(each) for each in sorted_iterable ])
+        elif type_of_value == pd.core.frame.DataFrame:
+            value_as_string = value.to_csv()
+            output = hash(value_as_string)
         elif is_iterable(value):
             output = tuple([ make_hashable(each) for each in value ])
         else:
@@ -290,7 +293,7 @@ def auto_cache(function, *args, **kwargs):
         return large_pickle_load(path_to_cache)
     # otherwise create it
     else:
-        print(f"cache for {function.__name__} didn't exist")
+        print(f"cache for {function.__name__} (with the current args) didn't exist")
         print("building cache now...")
         result = function(*args, **kwargs)
         try:
