@@ -65,6 +65,7 @@ def visualize_features(name, features_df, labels_df, *other_args):
         
     print("")
 
+
 def chi2_metric(df_classified, title):
     """
     Calculates chi2 score of each feature with respect to the covid labels
@@ -84,6 +85,7 @@ def chi2_metric(df_classified, title):
         alpha=0.3
     )
     plt.xlabel("Feature")
+    plt.xticks(rotation=90)
     plt.ylabel("Chi2")
     plt.title(title)
     plt.show()
@@ -157,6 +159,8 @@ def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], 
         df_anova.scores_,
         alpha=0.3
     )
+    # plt.hlines(5, 0, len(df_classified.drop(
+    #     to_drop, axis=1).columns))
     plt.xlabel("Feature")
     plt.xticks(rotation=90)
     plt.ylabel("anova")
@@ -172,6 +176,50 @@ def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], 
         plt.title(title + "as image")
         plt.show()
 
+
+def findConditionalEntropy(data, col):
+    total = len(data)
+    fractions = []
+    ce = []
+    for i in data[col].unique():
+        bcount = data[data[col] == i]
+        bcount = len(bcount[bcount[['covid(label)']] == 0])
+        mcount = data[data[col] == i]
+        mcount = len(mcount[mcount[['covid(label)']] == 1])
+        part = bcount + mcount
+        bpart = 0
+        mpart = 0
+        if part != 0:
+            bpart = bcount / part
+            mpart = mcount / part
+        logb = 0
+        logm = 0
+        if bpart != 0:
+            logb = np.log2(bpart)
+        if mpart != 0:
+            logm = np.log2(mpart)
+        fractions.append(part)
+        ce.append(-(bpart * logb + (mpart) * logm))
+    fractions = np.array(fractions) / total
+    return np.sum(fractions * np.array(ce))
+
+
+def cond_entropy_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], genImage=True):
+    cond_entropy_vals = []
+    for i in df_classified.drop(
+            to_drop, axis=1).columns:
+        cond_entropy_vals.append(findConditionalEntropy(df_classified, i))
+
+    plt.figure()
+    plt.scatter(df_classified.drop(
+        to_drop, axis=1).columns, cond_entropy_vals, alpha=0.3)
+    plt.xlabel("Feature")
+    plt.xticks(rotation=90)
+    plt.ylabel("entropy")
+    plt.title(title)
+    plt.show()
+
+
 def categorical_plots(data):
     '''
     Plots the categorical data from csv
@@ -180,9 +228,11 @@ def categorical_plots(data):
     label_count = list(data.groupby(["covid(label)"]).count()["age"])
     plt.bar(["Negative", "Positive"], label_count)
     plt.show()
-    data['age'] = (data['age'] // 10 * 10).astype(int).astype(str) + "-" + (data['age'] // 10 * 10 + 9).astype(int).astype(str)
+    data['age'] = (data['age'] // 10 * 10).astype(int).astype(str) + \
+        "-" + (data['age'] // 10 * 10 + 9).astype(int).astype(str)
     for i in data.columns[1:-1]:
-        pd.crosstab(data[i], data['covid(label)']).plot(kind='bar', stacked=False)
+        pd.crosstab(data[i], data['covid(label)']).plot(
+            kind='bar', stacked=False)
         plt.title(i)
         plt.legend(["Negative", "Positive"])
         plt.xlabel("Category")
@@ -193,11 +243,15 @@ def interpolate_categories(series):
     # from https://stackoverflow.com/questions/43586058/pandas-interpolate-with-nearest-for-non-numeric-values
     fact = series.astype('category').factorize()
 
-    series_cat = pd.Series(fact[0]).replace(-1, np.nan) # get string as categorical (-1 is NaN)
-    series_cat_interp = series_cat.interpolate("nearest") # interpolate categorical
+    # get string as categorical (-1 is NaN)
+    series_cat = pd.Series(fact[0]).replace(-1, np.nan)
+    series_cat_interp = series_cat.interpolate(
+        "nearest")  # interpolate categorical
 
-    cat_to_string = {i:x for i,x in enumerate(fact[1])} # dict connecting category to string
-    series_str_interp = series_cat_interp.map(cat_to_string) # turn category back to string
+    # dict connecting category to string
+    cat_to_string = {i: x for i, x in enumerate(fact[1])}
+    series_str_interp = series_cat_interp.map(
+        cat_to_string)  # turn category back to string
 
     return series_str_interp
     
@@ -206,10 +260,12 @@ def interpolate_data(df):
     df = get_countries(df)
     return df
 
+
 def get_countries(df):
     # take the last word from the location values, to get the countries
     df = df.interpolate().apply(interpolate_categories)
-    df['location']=df['location'].str.split(",").str[-1].str.strip()
+    df['location'] = df['location'].str.split(",").str[-1].str.strip()
+    df['covid(label)'] = df['covid(label)'].astype('category')
     return df
 
 
@@ -224,6 +280,8 @@ if __name__ == "__main__":
     # One hot encoding for countries and gender
     print("\nPlotted csv information with mutual_information")
     mutual_info_metric(one_hot_csv, "CSV Information", ['covid(label)'], False)
+    # print("Plotted csv information with chi2")
+    # chi2_metric(one_hot_csv, "CSV Information")
     print("\nPlotted csv information with anova")
     anova_metric(one_hot_csv, "CSV Information", ['covid(label)'], False)
     print("\nPlotting categorical data frequency bar charts...")
