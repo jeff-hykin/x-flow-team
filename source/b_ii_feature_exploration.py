@@ -134,7 +134,7 @@ def mutual_info_metric(df_classified, title, to_drop=None, gen_image=True):
             plt.imshow(tem, cmap=plt.cm.gray)
             plt.title(title + "as image")
             plt.tight_layout()
-            plt.savefig("../graphs/new_b_ii/" + title + ".png")
+            plt.savefig("../graphs/new_b_ii/" + title + "image.png")
             plt.show()
         except Exception as error:
             print(f"Error when trying to generate image for {title}")
@@ -184,7 +184,7 @@ def anova_metric(df_classified, title, to_drop=['filename', 'covid(label)'], gen
         plt.imshow(tem, cmap=plt.cm.gray)
         plt.title(title + "as image")
         plt.tight_layout()
-        plt.savefig("../graphs/new_b_ii/" + title + ".png")
+        plt.savefig("../graphs/new_b_ii/" + title + "image.png")
         plt.show()
 
 
