@@ -5,6 +5,7 @@ from skimage.filters import gabor_kernel
 from skimage.util import img_as_float
 import matplotlib.pyplot as plt
 import numpy as np
+import skimage
 
 from a_image_preprocessing import only_keep_every_third_pixel, get_preprocessed_train_test
 from misc_tools import split_into_columns
@@ -20,7 +21,7 @@ def get_hog_train_test(hog_options={}, preprocess_options={}):
     test_features  = split_into_columns(test_features,  "images")
     return train_features, train_labels, test_features
 
-def get_gabor_train_test(gabor_options={}, preprocess_options={}):
+def get_gabor_train_test(options={}, preprocess_options={}):
     train_features, train_labels, test_features = get_preprocessed_train_test(**preprocess_options)
     
     # 
@@ -49,15 +50,13 @@ def get_gabor_train_test(gabor_options={}, preprocess_options={}):
         # just pass the data through without touching it
         return arg
     
-    # gabor + flatten
-    transformation = lambda each: progress(np.array(gabor_feature(each, **gabor_options)).flatten())
+    # canny
+    transformation = lambda each: canny_feature(each)
     train_features['images'] = train_features['images'].transform(transformation)
-    test_features['images']  = test_features['images'].transform(transformation)
+    # test_features['images']  = test_features['images'].transform(transformation)
+    
     # give every image-feature its own column (a lot of columns)
-    print('train_features = ', len(train_features['images'][0]))
-    print('splitting into columns')
     train_features = split_into_columns(train_features, "images")
-    print('splitting first')
     test_features  = split_into_columns(test_features,  "images")
     return train_features, train_labels, test_features
 
@@ -91,6 +90,21 @@ def visualize_hog(original_image, hog_image):
     ax2.set_title('Histogram of Oriented Gradients')
 
     plt.show()
+
+def sum_rows(iterable):
+    return [ sum([1 for each_value in each if each ]) for each in iterable]
+
+def canny_feature(image):
+    print('image.shape = ', image.shape)
+    if image.shape == (250, ):
+        print('type(image) = ', type(image))
+        print('image = ', image)
+    
+    feature_results = skimage.feature.canny(image, sigma=3)
+    values = sum_rows(feature_results)
+    values += sum_rows(feature_results.transpose())
+    np.array(values)
+    return image
 
 def gabor_feature(image, include_kernel=False):
     '''
