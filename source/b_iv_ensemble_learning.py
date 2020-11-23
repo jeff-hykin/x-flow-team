@@ -5,7 +5,9 @@ from sklearn import svm
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import Perceptron
 from sklearn.ensemble import RandomForestClassifier
-from b_ii_feature_exploration import hog_feature, create_feature_df
+from b_i_visual_feature_extraction import hog_feature
+from b_ii_feature_exploration import create_feature_df
+import numpy as np
 
 def ada_boost(features, labels):
     '''
