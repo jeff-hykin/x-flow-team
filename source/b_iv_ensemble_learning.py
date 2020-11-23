@@ -17,7 +17,7 @@ def ada_boost(features, labels):
     base_models = [
         (DecisionTreeClassifier(max_depth=1), 'SAMME.R'),
         (svm.SVC(kernel='linear', C=1), 'SAMME'),
-        (Perceptron(tol=1e-3, random_state=0), 'SAMME')
+        # (Perceptron(tol=1e-2, random_state=0), 'SAMME')
     ]
     fit_time = []
     avg_acc = []
@@ -41,7 +41,7 @@ def ada_boost(features, labels):
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_ylabel('training time')
     ax.set_title('training time for each base model of AdaBoost')
-    plt.xticks(ind,('DecisionTree', 'SVM', 'Perceptron'))
+    plt.xticks(ind,('DecisionTree', 'SVM'))
     ax.legend()
     plt.show()
 
@@ -49,7 +49,7 @@ def ada_boost(features, labels):
     rects2 = ax.bar(ind + width/2, avg_acc, width, color='IndianRed', label='avg_acc')
     ax.set_ylabel('Average accuracy')
     ax.set_title('Average accuracy for each base model of AdaBoost')
-    plt.xticks(ind,('DecisionTree', 'SVM', 'Perceptron'))
+    plt.xticks(ind,('DecisionTree', 'SVM'))
     ax.legend()
     plt.show()
 
@@ -67,3 +67,4 @@ if __name__=="__main__":
     hog_feature = df_hog[:, 1:-2].astype('float32')
     hog_label = df_hog[:, -1].astype('float32')
     fit_time, avg_acc = ada_boost(hog_feature, hog_label)
+
