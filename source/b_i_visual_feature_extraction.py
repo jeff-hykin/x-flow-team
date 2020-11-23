@@ -88,11 +88,27 @@ def visualize_hog(original_image, hog_image):
 
     ax2.imshow(hog_image_rescaled, cmap=plt.cm.gray) 
     ax2.set_title('Histogram of Oriented Gradients')
+    plt.savefig('../graph/HoG_feature.png')
+    plt.show()
 
+def visualize_canny(original_image, canny_image):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8), sharex=True, sharey=True) 
+
+    ax1.imshow(original_image, cmap=plt.cm.gray) 
+    ax1.set_title('Original Image') 
+
+    # Rescale histogram for better display 
+    canny_image_rescaled = exposure.rescale_intensity(canny_image, in_range=(0, 10)) 
+
+    ax2.imshow(canny_image_rescaled, cmap=plt.cm.gray) 
+    ax2.set_title('canny')
+    plt.savefig('../graph/canny_feature.png')
     plt.show()
 
 def canny_feature(image):
     feature_results = np.copy(skimage.feature.canny(image, sigma=3))
+    visualize_canny(image, feature_results)
+
     values = []
     for each_row in feature_results:
         ones = len([ 1 for each_value in each_row if each_value ])
@@ -168,10 +184,27 @@ def gabor_plot(kernel_params, kernels, results, image):
             power = results[i//2 + 5*j]
             ax.imshow(power)
             ax.axis('off')
-    plt.savefig("../graphs/gabor_features.png")
+    plt.savefig("../graph/gabor_features.png")
  
 if __name__=="__main__":
-    brick = only_keep_every_third_pixel(data.brick())
+    ## train image for testing feature extraction method
+    train_features, train_labels, test_features = get_preprocessed_train_test()
+    tem = train_features['images'].values
+    item = tem[0]
     # a single test of Gabor Extraction
-    results, kernels, kernel_params = gabor_feature(brick, include_kernel=True)
-    gabor_plot(kernel_params, kernels, results, brick)
+    # results, kernels, kernel_params = gabor_feature(item, include_kernel=True)
+    # gabor_plot(kernel_params, kernels, results, item)
+    
+    # a single test of Hog Extraction
+    # hog_img = hog_feature(item)
+    # visualize_hog(item, hog_img)
+
+    # a single test of Canny Extraction
+    canny_img = canny_feature(item)
+
+    ## another picture for test
+    # brick = only_keep_every_third_pixel(data.brick())
+    # # a single test of Gabor Extraction
+    # results, kernels, kernel_params = gabor_feature(brick, include_kernel=True)
+    # gabor_plot(kernel_params, kernels, results, brick)
+
