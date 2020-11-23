@@ -247,7 +247,7 @@ def categorical_plots(data):
     a = (data['age'] // 10 * 10).astype(int).astype(str) + \
         "-" + (data['age'] // 10 * 10 + 9).astype(int).astype(str)
     data.assign(age=a.to_numpy())
-    for i in data.columns[1:-1]:
+    for i in data.columns[0:-1]:
         pd.crosstab(data[i], data['covid(label)']).plot(
             kind='bar', stacked=False)
         plt.title(i)
@@ -255,8 +255,8 @@ def categorical_plots(data):
         plt.xlabel("Category")
         plt.ylabel("Count")
         plt.tight_layout()
+        plt.savefig("../graphs/new_b_ii/" + i + ".png")
         plt.show()
-        # plt.savefig("../graphs/new_b_ii/")
 
 def interpolate_categories(series):
     # from https://stackoverflow.com/questions/43586058/pandas-interpolate-with-nearest-for-non-numeric-values
