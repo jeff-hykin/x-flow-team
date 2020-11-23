@@ -22,6 +22,8 @@ from misc_tools import split_data, auto_cache, ensure_folder
 from b_i_visual_feature_extraction import hog_feature, get_hog_train_test, get_canny_train_test
 from b_ii_feature_exploration import create_feature_df
 
+def average(each):
+    return sum(each)/len(each)
 
 # https://www.codespeedy.com/sequential-forward-selection-with-python-and-scikit-learn/
 def sequential_forward_selection(data, num_tests, feature_counts):
@@ -276,9 +278,25 @@ if __name__ == "__main__":
     folder = "./feature_selections/"
     ensure_folder(folder)
     filter_features, optimized_filter_df, wrapper_features, optimized_wrapper_df, sfs_time, scores_sfs, fc_time, scores_fc = canny_results
+    print("canny_results:")
+    print("")
+    print('scores_sfs = ', average(scores_sfs))
+    print('sfs_time = ', sfs_time)
+    print("")
+    print('scores_fc = ', average(scores_fc))
+    print('fc_time = ', fc_time)
+    print("")
     optimized_filter_df.to_csv(folder+"canny_filter.csv")
     optimized_wrapper_df.to_csv(folder+"canny_wrapper.csv")
     
     filter_features, optimized_filter_df, wrapper_features, optimized_wrapper_df, sfs_time, scores_sfs, fc_time, scores_fc = hog_results
+    print("hog_results:")
+    print("")
+    print('scores_sfs = ', average(scores_sfs))
+    print('sfs_time = ', sfs_time)
+    print("")
+    print('scores_fc = ', average(scores_fc))
+    print('fc_time = ', fc_time)
+    print("")
     optimized_filter_df.to_csv(folder+"hog_filter.csv")
     optimized_wrapper_df.to_csv(folder+"hog_wrapper.csv")

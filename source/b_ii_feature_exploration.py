@@ -159,7 +159,6 @@ def anova_metric(df_classified, title, to_drop=['filename', 'covid(label)'], gen
     feature_data = feature_data - mean_feature_data
     label = df_classified[['covid(label)']].values.ravel()
 
-    print(len(feature_data))
     df_anova = calc_anova.fit(feature_data, label)
     plt.figure()
     plt.scatter(
@@ -296,17 +295,17 @@ if __name__ == "__main__":
     train_features_df = interpolate_data(train_features_df)
     one_hot_csv = pd.get_dummies(train_features_df, columns=['gender', 'location'])
     
-    # print(train_features_df.head())
-    # # One hot encoding for countries and gender
-    # print("\nPlotted csv information with mutual_information")
-    # mutual_info_metric(one_hot_csv, "Input Mutual Info Scores", ['covid(label)'], False)
-    # print("Plotted csv information with chi2")
-    # chi2_metric(one_hot_csv, "Input Chi2 Scores")
-    # print("\nPlotted csv information with anova")
-    # anova_metric(one_hot_csv, "Input Anova Scores", ['covid(label)'], False, True)
-    # print("\nPlotting categorical data frequency bar charts...")
-    # categorical_plots(train_features_df)
-    # print("\nVisualizing HoG features...")
-    # visualize_features("HoG", *get_hog_train_test())
+    print(train_features_df.head())
+    # One hot encoding for countries and gender
+    print("\nPlotted csv information with mutual_information")
+    mutual_info_metric(one_hot_csv, "Input Mutual Info Scores", ['covid(label)'], False)
+    print("Plotted csv information with chi2")
+    chi2_metric(one_hot_csv, "Input Chi2 Scores")
+    print("\nPlotted csv information with anova")
+    anova_metric(one_hot_csv, "Input Anova Scores", ['covid(label)'], False, True)
+    print("\nPlotting categorical data frequency bar charts...")
+    categorical_plots(train_features_df)
+    print("\nVisualizing HoG features...")
+    visualize_features("HoG", *get_hog_train_test())
     print("\nVisualizing Canny features...")
     visualize_features("Canny", *get_canny_train_test())
