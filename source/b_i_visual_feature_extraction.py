@@ -57,7 +57,7 @@ def get_gabor_train_test(options={}, preprocess_options={}):
     
     # give every image-feature its own column (a lot of columns)
     train_features = split_into_columns(train_features, "images")
-    test_features  = split_into_columns(test_features,  "images")
+    # test_features  = split_into_columns(test_features,  "images")
     return train_features, train_labels, test_features
 
 def hog_feature(image, **options):
@@ -91,20 +91,22 @@ def visualize_hog(original_image, hog_image):
 
     plt.show()
 
-def sum_rows(iterable):
-    return [ sum([1 for each_value in each if each ]) for each in iterable]
-
 def canny_feature(image):
     print('image.shape = ', image.shape)
     if image.shape == (250, ):
         print('type(image) = ', type(image))
         print('image = ', image)
     
-    feature_results = skimage.feature.canny(image, sigma=3)
-    values = sum_rows(feature_results)
-    values += sum_rows(feature_results.transpose())
-    np.array(values)
-    return image
+    feature_results = np.copy(skimage.feature.canny(image, sigma=3))
+    print('feature_results.shape = ', feature_results.shape)
+    values = []
+    for each_row in feature_results:
+        ones = len([ 1 for each_value in each_row if each_value ])
+        values.append(ones)
+    for each_column in feature_results.transpose():
+        ones = len([ 1 for each_value in each_column if each_value ])
+        values.append(ones)
+    return np.array(values)
 
 def gabor_feature(image, include_kernel=False):
     '''
