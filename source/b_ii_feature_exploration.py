@@ -98,7 +98,7 @@ def mutual_info_metric(df_classified, title, to_drop=None, gen_image=True):
     """
     # remove all the string columns or later calculations will fail
     if to_drop is None:
-        to_drop = [ each for each in list(df_classified.columns) if type(each) != str ]
+        to_drop = [ each for each in list(df_classified.columns) if type(each) == str ]
     calc_mutual_info = SelectKBest(score_func=mutual_info_classif, k=1)
     df_classified = df_classified.dropna()
     # normalization of features in each sample
@@ -144,7 +144,7 @@ def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], 
     Plots results in a scatter plot and image matrix of entropy
     """
     # drop all the string 
-    to_drop = to_drop + [ each for each in list(df_classified.columns) if type(each) != str ]
+    to_drop = to_drop + [ each for each in list(df_classified.columns) if type(each) == str ]
     to_drop = [item for item in to_drop if item in list(df_classified)]
     calc_anova = SelectKBest(k=1)
     df_classified = df_classified.dropna()
@@ -235,10 +235,9 @@ def categorical_plots(data):
     plt.bar(["Negative", "Positive"], label_count)
     plt.tight_layout()
     plt.show()
-    # data['age'] = (data['age'] // 10 * 10).astype(int).astype(str) + \
-    #     "-" + (data['age'] // 10 * 10 + 9).astype(int).astype(str)
-    data.loc[:,['age']] = ((data['age'] // 10 * 10).astype(int).astype(str) + \
-        "-" + (data['age'] // 10 * 10 + 9).astype(int).astype(str)).to_numpy()
+    a = (data['age'] // 10 * 10).astype(int).astype(str) + \
+        "-" + (data['age'] // 10 * 10 + 9).astype(int).astype(str)
+    data.assign(age=a.to_numpy())
     for i in data.columns[1:-1]:
         pd.crosstab(data[i], data['covid(label)']).plot(
             kind='bar', stacked=False)
@@ -298,5 +297,5 @@ if __name__ == "__main__":
     categorical_plots(train_features_df)
     print("\nVisualizing HoG features...")
     visualize_features("HoG", *get_hog_train_test())
-    # print("\nVisualizing Gabor features...")
-    # visualize_features("Gabor", *get_gabor_train_test())
+    print("\nVisualizing Gabor features...")
+    visualize_features("Gabor", *get_gabor_train_test())
