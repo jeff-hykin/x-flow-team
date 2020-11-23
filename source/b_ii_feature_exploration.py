@@ -44,16 +44,21 @@ def visualize_features(name, features_df, labels_df, *other_args):
     features_df['covid(label)'] = labels_df['covid(label)']
     
     # calculate evaluation metrics
-    print(features_df.head())
+    gen_image = True
+    # if not 1 feature per pixel
+    print(features_df.shape[1])
+    print(features_df.shape[0])
+    if features_df.shape[1] < 10000:
+        gen_image = False
     
     try:
-        mutual_info_metric(features_df, f"{name} Mutual Info Metrics")
+        mutual_info_metric(features_df, f"{name} Mutual Info Metrics", None, gen_image)
     except Exception as error:
         print(f"Error when computing mutual_info_metric() for {name}")
         print(error)
     
     try:
-        anova_metric(features_df, f"{name} Anova Metrics")
+        anova_metric(features_df, f"{name} Anova Metrics", [], gen_image)
     except Exception as error:
         print(f"Error when computing anova_metric() for {name}")
         print(error)
@@ -301,7 +306,7 @@ if __name__ == "__main__":
     # anova_metric(one_hot_csv, "Input Anova Scores", ['covid(label)'], False, True)
     # print("\nPlotting categorical data frequency bar charts...")
     # categorical_plots(train_features_df)
-    print("\nVisualizing HoG features...")
-    visualize_features("HoG", *get_hog_train_test())
+    # print("\nVisualizing HoG features...")
+    # visualize_features("HoG", *get_hog_train_test())
     print("\nVisualizing Canny features...")
     visualize_features("Canny", *get_canny_train_test())
