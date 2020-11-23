@@ -55,6 +55,9 @@ def get_gabor_train_test(gabor_options={}, preprocess_options={}):
     train_features['images'] = train_features['images'].transform(transformation)
     test_features['images']  = test_features['images'].transform(transformation)
     # give every image-feature its own column (a lot of columns)
+    # print('#train features#')
+    # print(train_features)
+    # print('################')
     train_features = split_into_columns(train_features, "images")
     test_features  = split_into_columns(test_features,  "images")
     return train_features, train_labels, test_features

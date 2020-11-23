@@ -44,7 +44,7 @@ def visualize_features(name, features_df, labels_df, *other_args):
         visualize_features("Gabor", *get_gabor_train_test())
         visualize_features("Hog", *get_hog_train_test())
     '''
-    # add the label 
+    # add the label
     features_df = pd.DataFrame.copy(features_df)
     features_df['covid(label)'] = labels_df['covid(label)']
     
@@ -88,6 +88,7 @@ def chi2_metric(df_classified, title):
     plt.xticks(rotation=90)
     plt.ylabel("Chi2")
     plt.title(title)
+    plt.tight_layout()
     plt.show()
 
 def mutual_info_metric(df_classified, title, to_drop=None, gen_image=True):
@@ -119,6 +120,7 @@ def mutual_info_metric(df_classified, title, to_drop=None, gen_image=True):
     plt.xticks(rotation=90)
     plt.ylabel("mutual_info")
     plt.title(title)
+    plt.tight_layout()
     plt.show()
     
     if gen_image:
@@ -129,6 +131,7 @@ def mutual_info_metric(df_classified, title, to_drop=None, gen_image=True):
             plt.figure()
             plt.imshow(tem, cmap=plt.cm.gray)
             plt.title(title + "as image")
+            plt.tight_layout()
             plt.show()
         except Exception as error:
             print(f"Error when trying to generate image for {title}")
@@ -165,15 +168,17 @@ def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], 
     plt.xticks(rotation=90)
     plt.ylabel("anova")
     plt.title(title)
+    plt.tight_layout()
     plt.show()
     
     if gen_image:
         # show the conditional entropy as an image matrix
-        length = int(np.sqrt(df_classified.scores_.shape[0]))
-        tem = np.reshape(df_classified.scores_, (length, length))
+        length = int(np.sqrt(df_anova.scores_.shape[0]))
+        tem = np.reshape(df_anova.scores_, (length, length))
         plt.figure()
         plt.imshow(tem, cmap=plt.cm.gray)
         plt.title(title + "as image")
+        plt.tight_layout()
         plt.show()
 
 
@@ -217,6 +222,7 @@ def cond_entropy_metric(df_classified, title, to_drop=[0, 'filename', 'covid(lab
     plt.xticks(rotation=90)
     plt.ylabel("entropy")
     plt.title(title)
+    plt.tight_layout()
     plt.show()
 
 
@@ -227,9 +233,12 @@ def categorical_plots(data):
     data = data.dropna()
     label_count = list(data.groupby(["covid(label)"]).count()["age"])
     plt.bar(["Negative", "Positive"], label_count)
+    plt.tight_layout()
     plt.show()
-    data['age'] = (data['age'] // 10 * 10).astype(int).astype(str) + \
-        "-" + (data['age'] // 10 * 10 + 9).astype(int).astype(str)
+    # data['age'] = (data['age'] // 10 * 10).astype(int).astype(str) + \
+    #     "-" + (data['age'] // 10 * 10 + 9).astype(int).astype(str)
+    data.loc[:,['age']] = ((data['age'] // 10 * 10).astype(int).astype(str) + \
+        "-" + (data['age'] // 10 * 10 + 9).astype(int).astype(str)).to_numpy()
     for i in data.columns[1:-1]:
         pd.crosstab(data[i], data['covid(label)']).plot(
             kind='bar', stacked=False)
@@ -237,6 +246,7 @@ def categorical_plots(data):
         plt.legend(["Negative", "Positive"])
         plt.xlabel("Category")
         plt.ylabel("Count")
+        plt.tight_layout()
         plt.show()
 
 def interpolate_categories(series):
@@ -280,13 +290,13 @@ if __name__ == "__main__":
     # One hot encoding for countries and gender
     print("\nPlotted csv information with mutual_information")
     mutual_info_metric(one_hot_csv, "CSV Information", ['covid(label)'], False)
-    # print("Plotted csv information with chi2")
-    # chi2_metric(one_hot_csv, "CSV Information")
+    print("Plotted csv information with chi2")
+    chi2_metric(one_hot_csv, "CSV Information")
     print("\nPlotted csv information with anova")
     anova_metric(one_hot_csv, "CSV Information", ['covid(label)'], False)
     print("\nPlotting categorical data frequency bar charts...")
     categorical_plots(train_features_df)
     print("\nVisualizing HoG features...")
     visualize_features("HoG", *get_hog_train_test())
-    print("\nVisualizing Gabor features...")
-    visualize_features("Gabor", *get_gabor_train_test())
+    # print("\nVisualizing Gabor features...")
+    # visualize_features("Gabor", *get_gabor_train_test())
