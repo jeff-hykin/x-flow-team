@@ -47,7 +47,7 @@ def visualize_features(name, features_df, labels_df, *other_args):
     print(features_df.head())
     
     try:
-        mutual_info_metric(features_df, f"{name} Mutual Info Metrics", )
+        mutual_info_metric(features_df, f"{name} Mutual Info Metrics")
     except Exception as error:
         print(f"Error when computing mutual_info_metric() for {name}")
         print(error)
@@ -84,6 +84,7 @@ def chi2_metric(df_classified, title):
     plt.ylabel("Chi2")
     plt.title(title)
     plt.tight_layout()
+    plt.savefig("../graphs/new_b_ii/" + title + ".png")
     plt.show()
 
 def mutual_info_metric(df_classified, title, to_drop=None, gen_image=True):
@@ -116,6 +117,7 @@ def mutual_info_metric(df_classified, title, to_drop=None, gen_image=True):
     plt.ylabel("mutual_info")
     plt.title(title)
     plt.tight_layout()
+    plt.savefig("../graphs/new_b_ii/" + title + ".png")
     plt.show()
     
     if gen_image:
@@ -127,19 +129,21 @@ def mutual_info_metric(df_classified, title, to_drop=None, gen_image=True):
             plt.imshow(tem, cmap=plt.cm.gray)
             plt.title(title + "as image")
             plt.tight_layout()
+            plt.savefig("../graphs/new_b_ii/" + title + ".png")
             plt.show()
         except Exception as error:
             print(f"Error when trying to generate image for {title}")
             print(error)
             print()
 
-def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], gen_image=True):
+def anova_metric(df_classified, title, to_drop=['filename', 'covid(label)'], gen_image=True, one_hot=False):
     """
     Calculates anova score of each feature with respect to the covid labels
     Plots results in a scatter plot and image matrix of entropy
     """
     # drop all the string 
-    to_drop = to_drop + [ each for each in list(df_classified.columns) if type(each) == str ]
+    if not one_hot:
+        to_drop = to_drop + [ each for each in list(df_classified.columns) if type(each) == str ]
     to_drop = [item for item in to_drop if item in list(df_classified)]
     calc_anova = SelectKBest(k=1)
     df_classified = df_classified.dropna()
@@ -150,6 +154,7 @@ def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], 
     feature_data = feature_data - mean_feature_data
     label = df_classified[['covid(label)']].values.ravel()
 
+    print(len(feature_data))
     df_anova = calc_anova.fit(feature_data, label)
     plt.figure()
     plt.scatter(
@@ -164,6 +169,7 @@ def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], 
     plt.ylabel("anova")
     plt.title(title)
     plt.tight_layout()
+    plt.savefig("../graphs/new_b_ii/" + title + ".png")
     plt.show()
     
     if gen_image:
@@ -174,6 +180,7 @@ def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], 
         plt.imshow(tem, cmap=plt.cm.gray)
         plt.title(title + "as image")
         plt.tight_layout()
+        plt.savefig("../graphs/new_b_ii/" + title + ".png")
         plt.show()
 
 
@@ -218,6 +225,7 @@ def cond_entropy_metric(df_classified, title, to_drop=[0, 'filename', 'covid(lab
     plt.ylabel("entropy")
     plt.title(title)
     plt.tight_layout()
+    plt.savefig("../graphs/new_b_ii/" + title + ".png")
     plt.show()
 
 
@@ -229,6 +237,8 @@ def categorical_plots(data):
     label_count = list(data.groupby(["covid(label)"]).count()["age"])
     plt.bar(["Negative", "Positive"], label_count)
     plt.tight_layout()
+    plt.title("Covid Labels")
+    plt.savefig("../graphs/new_b_ii/labelbar.png")
     plt.show()
     a = (data['age'] // 10 * 10).astype(int).astype(str) + \
         "-" + (data['age'] // 10 * 10 + 9).astype(int).astype(str)
@@ -242,6 +252,7 @@ def categorical_plots(data):
         plt.ylabel("Count")
         plt.tight_layout()
         plt.show()
+        # plt.savefig("../graphs/new_b_ii/")
 
 def interpolate_categories(series):
     # from https://stackoverflow.com/questions/43586058/pandas-interpolate-with-nearest-for-non-numeric-values
@@ -280,16 +291,16 @@ if __name__ == "__main__":
     train_features_df = interpolate_data(train_features_df)
     one_hot_csv = pd.get_dummies(train_features_df, columns=['gender', 'location'])
     
-    print(train_features_df.head())
-    # One hot encoding for countries and gender
-    print("\nPlotted csv information with mutual_information")
-    mutual_info_metric(one_hot_csv, "CSV Information", ['covid(label)'], False)
-    print("Plotted csv information with chi2")
-    chi2_metric(one_hot_csv, "CSV Information")
-    print("\nPlotted csv information with anova")
-    anova_metric(one_hot_csv, "CSV Information", ['covid(label)'], False)
-    print("\nPlotting categorical data frequency bar charts...")
-    categorical_plots(train_features_df)
+    # print(train_features_df.head())
+    # # One hot encoding for countries and gender
+    # print("\nPlotted csv information with mutual_information")
+    # mutual_info_metric(one_hot_csv, "Input Mutual Info Scores", ['covid(label)'], False)
+    # print("Plotted csv information with chi2")
+    # chi2_metric(one_hot_csv, "Input Chi2 Scores")
+    # print("\nPlotted csv information with anova")
+    # anova_metric(one_hot_csv, "Input Anova Scores", ['covid(label)'], False, True)
+    # print("\nPlotting categorical data frequency bar charts...")
+    # categorical_plots(train_features_df)
     print("\nVisualizing HoG features...")
     visualize_features("HoG", *get_hog_train_test())
     print("\nVisualizing Canny features...")
