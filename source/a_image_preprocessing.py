@@ -4,7 +4,7 @@ import pandas as pd
 from skimage.util import img_as_float
 import numpy as np
 
-from misc_tools import get_train_test, is_grayscale
+from misc_tools import get_train_test, is_grayscale, ensure_folder
 
 def get_preprocessed_train_test(**kwargs):
     """
@@ -80,7 +80,7 @@ def get_cropped_and_resized_images(name, new_image_size):
     image_folder = name + '/'
     new_path = 'new_' + name + str(new_image_size) + '/'
     if not os.path.exists(new_path):
-        os.makedirs(new_path)
+        ensure_folder(new_path)
     
         for each_image_name in os.listdir(image_folder):
             new_images.append(crop_resize(cv2.imread(image_folder + each_image_name), new_image_size))

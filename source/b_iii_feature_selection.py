@@ -18,7 +18,7 @@ import time
 
 import multiprocessing
 
-from misc_tools import split_data, auto_cache
+from misc_tools import split_data, auto_cache, ensure_folder
 from b_i_visual_feature_extraction import hog_feature, get_hog_train_test, get_canny_train_test
 from b_ii_feature_exploration import create_feature_df
 
@@ -274,11 +274,11 @@ if __name__ == "__main__":
     # save outputs
     # 
     folder = "./feature_selections/"
-    os.makedirs(folder)
+    ensure_folder(folder)
     filter_features, optimized_filter_df, wrapper_features, optimized_wrapper_df, sfs_time, scores_sfs, fc_time, scores_fc = canny_results
-    optimized_filter_df.to_csv(folder+"canny_filter_df.csv")
-    optimized_wrapper_df.to_csv(folder+"canny_wrapper_df.csv")
+    optimized_filter_df.to_csv(folder+"canny_filter.csv")
+    optimized_wrapper_df.to_csv(folder+"canny_wrapper.csv")
     
     filter_features, optimized_filter_df, wrapper_features, optimized_wrapper_df, sfs_time, scores_sfs, fc_time, scores_fc = hog_results
-    optimized_filter_df.to_csv(folder+"hog_filter_df.csv")
-    optimized_wrapper_df.to_csv(folder+"hog_wrapper_df.csv")
+    optimized_filter_df.to_csv(folder+"hog_filter.csv")
+    optimized_wrapper_df.to_csv(folder+"hog_wrapper.csv")

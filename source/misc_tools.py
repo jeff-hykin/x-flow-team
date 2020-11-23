@@ -275,11 +275,8 @@ def auto_cache(function, *args, **kwargs):
     
     # make the folders for the cache
     path_to_cache = relative_path("cache.nosync", f"{unique_hash}")
-    try:
-        os.makedirs(os.path.dirname(path_to_cache))
-    except:
-        pass
-    
+    ensure_folder(os.path.dirname(path_to_cache))
+
     # if the cache (for these arguments) exists, then just load it
     if os.path.exists(path_to_cache):
         return large_pickle_load(path_to_cache)
@@ -299,3 +296,9 @@ def auto_cache(function, *args, **kwargs):
             print('kwargs = ', kwargs)
             print("running the function manually instead (failsafe)")
         return result
+
+def ensure_folder(path):
+    try:
+        os.makedirs(path)
+    except:
+        pass
