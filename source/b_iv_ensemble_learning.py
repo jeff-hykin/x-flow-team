@@ -1,13 +1,17 @@
-from sklearn.ensemble import AdaBoostClassifier
-from sklearn.model_selection import cross_validate
-import matplotlib.pyplot as plt
 from sklearn import svm
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import Perceptron
+from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import Perceptron
+from sklearn.model_selection import cross_validate
+from sklearn.tree import DecisionTreeClassifier
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import pandas as pd
+
+from a_image_preprocessing import get_preprocessed_train_test
 from b_i_visual_feature_extraction import hog_feature
 from b_ii_feature_exploration import create_feature_df
-import numpy as np
 
 def ada_boost(features, labels):
     '''
@@ -56,15 +60,26 @@ def ada_boost(features, labels):
     return fit_time, avg_acc
 
 if __name__=="__main__":
-    # wrapper features
-
-    # filter features
-
-    # loading features df
-    df_hog = create_feature_df(hog_feature, 'new_train100') # 10000 features...
-
-    df_hog = df_hog.values
-    hog_feature = df_hog[:, 1:-2].astype('float32')
-    hog_label = df_hog[:, -1].astype('float32')
-    fit_time, avg_acc = ada_boost(hog_feature, hog_label)
-
+    # just get the labels (same for all feature sets)
+    _, labels_df, _ = get_preprocessed_train_test()
+    
+    # 
+    # load in different feature sets
+    # 
+    list_of_data = []
+    feature_folder = "./feature_selections/"
+    for each_csv_name in os.listdir(feature_folder):
+        features = pd.read_csv(feature_folder+each_csv_name)
+        
+        list_of_data.append((features, each_csv_name))
+    
+    # 
+    # convert data, run Ada Boost
+    # 
+    labels = labels_df.astype('float32')
+    for features_df, name in list_of_data:
+        print(f"running AdaBoost for {name}")
+        # Run Adaboost here
+        # TODO: make sure this part works
+        features = features_df.astype('float32')
+        fit_time, avg_acc = ada_boost(features, labels)
