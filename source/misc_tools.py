@@ -1,13 +1,5 @@
 from collections import Counter # frequency count
-from csv import reader
 import numpy
-from scipy import ndimage as ndi
-from skimage import data, exposure
-from skimage.filters import gabor_kernel
-from skimage.util import img_as_float
-from sklearn.feature_selection import chi2
-from sklearn.feature_selection import mutual_info_classif
-from sklearn.feature_selection import SelectKBest
 import cv2
 import json
 import math

@@ -19,7 +19,7 @@ import time
 import multiprocessing
 
 from misc_tools import split_data, auto_cache
-from b_i_visual_feature_extraction import hog_feature, get_hog_train_test, get_gabor_train_test
+from b_i_visual_feature_extraction import hog_feature, get_hog_train_test, get_canny_train_test
 from b_ii_feature_exploration import create_feature_df
 
 
@@ -263,9 +263,9 @@ if __name__ == "__main__":
     print('#')
     # these handle image preprocessing and one-hot encoding
     train_features_hog, train_labels_hog, test_features_hog = auto_cache(get_hog_train_test)
-    train_features_gabor, train_labels_gabor, test_features_gabor = auto_cache(get_gabor_train_test)
+    train_features_canny, train_labels_canny, test_features_canny = auto_cache(get_canny_train_test)
     
     # compute which features are the most helpful
     feature_counts = [ 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 20, 23, 25, 27, 35, 40 ]
-    gabor_results  = auto_cache(run_filter_vs_wrapper_competition, train_features_gabor, train_labels_gabor, feature_counts)
+    canny_results  = auto_cache(run_filter_vs_wrapper_competition, train_features_canny, train_labels_canny, feature_counts)
     hog_results    = auto_cache(run_filter_vs_wrapper_competition, train_features_hog,   train_labels_hog,   feature_counts)

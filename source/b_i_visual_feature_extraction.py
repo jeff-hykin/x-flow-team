@@ -21,7 +21,7 @@ def get_hog_train_test(hog_options={}, preprocess_options={}):
     test_features  = split_into_columns(test_features,  "images")
     return train_features, train_labels, test_features
 
-def get_gabor_train_test(options={}, preprocess_options={}):
+def get_canny_train_test(canny_options={}, preprocess_options={}):
     train_features, train_labels, test_features = get_preprocessed_train_test(**preprocess_options)
     
     # 
@@ -51,7 +51,7 @@ def get_gabor_train_test(options={}, preprocess_options={}):
         return arg
     
     # canny
-    transformation = lambda each: canny_feature(each)
+    transformation = lambda each: progress(canny_feature(each, **canny_options))
     train_features['images'] = train_features['images'].transform(transformation)
     test_features['images']  = test_features['images'].transform(transformation)
     

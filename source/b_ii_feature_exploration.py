@@ -1,12 +1,7 @@
 from csv import reader
-from scipy import ndimage as ndi
-from skimage import data, exposure
-from skimage.filters import gabor_kernel
-from skimage.util import img_as_float
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import mutual_info_classif
 from sklearn.feature_selection import SelectKBest
-from sklearn.metrics.pairwise import kernel_metrics
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,7 +11,7 @@ import sys
 
 from misc_tools import images_in, flatten, get_train_test
 from a_image_preprocessing import only_keep_every_third_pixel
-from b_i_visual_feature_extraction import get_hog_train_test, get_gabor_train_test
+from b_i_visual_feature_extraction import get_hog_train_test, get_canny_train_test
 
 # creates dataframe of features given function and image path
 def create_feature_df(extraction_fuction, image_folder_name):
@@ -41,7 +36,7 @@ def create_feature_df(extraction_fuction, image_folder_name):
 def visualize_features(name, features_df, labels_df, *other_args):
     '''
     ex:
-        visualize_features("Gabor", *get_gabor_train_test())
+        visualize_features("Canny", *get_canny_train_test())
         visualize_features("Hog", *get_hog_train_test())
     '''
     # add the label
@@ -297,5 +292,5 @@ if __name__ == "__main__":
     categorical_plots(train_features_df)
     print("\nVisualizing HoG features...")
     visualize_features("HoG", *get_hog_train_test())
-    print("\nVisualizing Gabor features...")
-    visualize_features("Gabor", *get_gabor_train_test())
+    print("\nVisualizing Canny features...")
+    visualize_features("Canny", *get_canny_train_test())
