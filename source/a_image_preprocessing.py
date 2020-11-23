@@ -103,5 +103,3 @@ def only_keep_every_third_pixel(image):
 if __name__=="__main__":
     train_features, train_labels, test_features = get_train_test()
     train_features["images"].values
-    
-    # get_cropped_and_resized_images('train', 100)

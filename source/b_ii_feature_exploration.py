@@ -177,7 +177,7 @@ def anova_metric(df_classified, title, to_drop=[0, 'filename', 'covid(label)'], 
         plt.show()
 
 
-def findConditionalEntropy(data, col):
+def find_conditional_entropy(data, col):
     total = len(data)
     fractions = []
     ce = []
@@ -208,7 +208,7 @@ def cond_entropy_metric(df_classified, title, to_drop=[0, 'filename', 'covid(lab
     cond_entropy_vals = []
     for i in df_classified.drop(
             to_drop, axis=1).columns:
-        cond_entropy_vals.append(findConditionalEntropy(df_classified, i))
+        cond_entropy_vals.append(find_conditional_entropy(df_classified, i))
 
     plt.figure()
     plt.scatter(df_classified.drop(

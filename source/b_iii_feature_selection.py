@@ -269,3 +269,16 @@ if __name__ == "__main__":
     feature_counts = [ 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 20, 23, 25, 27, 35, 40 ]
     canny_results  = auto_cache(run_filter_vs_wrapper_competition, train_features_canny, train_labels_canny, feature_counts)
     hog_results    = auto_cache(run_filter_vs_wrapper_competition, train_features_hog,   train_labels_hog,   feature_counts)
+    
+    # 
+    # save outputs
+    # 
+    folder = "./feature_selections/"
+    os.makedirs(folder)
+    filter_features, optimized_filter_df, wrapper_features, optimized_wrapper_df, sfs_time, scores_sfs, fc_time, scores_fc = canny_results
+    optimized_filter_df.to_csv(folder+"canny_filter_df.csv")
+    optimized_wrapper_df.to_csv(folder+"canny_wrapper_df.csv")
+    
+    filter_features, optimized_filter_df, wrapper_features, optimized_wrapper_df, sfs_time, scores_sfs, fc_time, scores_fc = hog_results
+    optimized_filter_df.to_csv(folder+"hog_filter_df.csv")
+    optimized_wrapper_df.to_csv(folder+"hog_wrapper_df.csv")
