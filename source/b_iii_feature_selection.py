@@ -16,6 +16,8 @@ from sklearn import svm
 from sklearn.model_selection import cross_val_score, train_test_split
 import time
 
+import multiprocessing
+
 from misc_tools import split_data, auto_cache
 from b_i_visual_feature_extraction import hog_feature, get_hog_train_test, get_gabor_train_test
 from b_ii_feature_exploration import create_feature_df
@@ -29,16 +31,15 @@ def sequential_forward_selection(data, num_tests, feature_counts):
                     (hyperparam) number of features,
     output: list of features chosen,
     '''
+    global compute_sfs # a bad hack for getting mutliprocessing working
     print('Running SFS...')
     # split data into features and labels
     data_labels = data['covid(label)'].copy()
     data_features = data.copy().drop(columns='covid(label)')
 
-    # keep track of best features' accuracies, indicies (of the chosen features) in the DataFrame, and number of features
-    best_features = {'accuracy': 0, 'indicies': [], 'count': 0}
-
-    # test with different numbers of features
-    for number_of_features in feature_counts:
+    # create a pure function (all values as arguments)
+    def compute_sfs(arg):
+        number_of_features, num_tests = arg
         # sequential forward selection
         sfs = SFS(
             KNN(n_neighbors=3), # estimator to use. RFS also seen
@@ -49,10 +50,21 @@ def sequential_forward_selection(data, num_tests, feature_counts):
             scoring='accuracy', # scored based on accuracy
             cv=num_tests # num_tests-fold cross validaton
         ).fit(data_features, data_labels) # train
-        # process results
-        print('CV score for', number_of_features, 'features: ', sfs.k_score_)
-        if sfs.k_score_ > best_features['accuracy']: # update best
-            best_features = {'accuracy': sfs.k_score_, 'indicies': sfs.k_feature_names_, 'count': number_of_features}
+        return sfs.k_score_, sfs.k_feature_names_, number_of_features
+    
+    # use multiprocessing to get the work done fast(er)
+    number_of_processes = (multiprocessing.cpu_count()-1) or 1
+    with multiprocessing.Pool(number_of_processes) as process_pool:
+        argument_list = [ (number_of_features, num_tests) for number_of_features in feature_counts ]
+        results = process_pool.map(compute_sfs, argument_list)
+    
+    # keep track of best features' accuracies, indicies (of the chosen features) in the DataFrame, and number of features
+    best_features = {'accuracy': 0, 'indicies': [], 'count': 0}
+    # see which one was the best
+    for score, feature_names, number_of_features in results:
+        print('CV score for', number_of_features, 'features: ', score)
+        if score > best_features['accuracy']: # update best
+            best_features = {'accuracy': score, 'indicies': feature_names, 'count': number_of_features}
     
     print('Best SFS accuracy is', best_features['accuracy'], 'with', best_features['count'], 'features')
     return best_features['indicies']
@@ -160,12 +172,10 @@ def filter_process(features_with_labels_df, feature_counts):
     print('#')
     # filter feature selection - fischer testing with different feature counts
     filter_features = fischer_criterion_selection(features_with_labels_df, feature_counts)
-    print('filter_features = ', filter_features)
     # create DataFrame for FC feature choices
     optimized_filter_df = pd.DataFrame({})
     for feature in filter_features:
         optimized_filter_df[feature] = features_with_labels_df[feature]
-    print('optimized_filter_df:\n', optimized_filter_df)
     
     return filter_features, optimized_filter_df
 
@@ -185,7 +195,6 @@ def wrapper_process(features_with_labels_df, feature_counts):
     optimized_wrapper_df = pd.DataFrame({})
     for feature in wrapper_features:
         optimized_wrapper_df[feature] = features_with_labels_df[feature]
-    print('optimized_wrapper_df = ', optimized_wrapper_df)
     
     return wrapper_features, optimized_wrapper_df
 
