@@ -8,6 +8,10 @@ from sklearn.ensemble import RandomForestClassifier
 from b_ii_feature_exploration import hog_feature, create_feature_df
 
 def ada_boost(features, labels):
+    '''
+    features: a 2D (250, 10000 or xxx) numpy array of features
+    labels: a 1D (250, 1) numpy array of label
+    '''
     base_models = [
         (DecisionTreeClassifier(max_depth=1), 'SAMME.R'),
         (svm.SVC(kernel='linear', C=1), 'SAMME'),
