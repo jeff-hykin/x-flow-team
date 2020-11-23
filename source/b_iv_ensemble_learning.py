@@ -10,6 +10,7 @@ import os
 import pandas as pd
 import regex as re
 
+from misc_tools import ensure_folder
 from a_image_preprocessing import get_preprocessed_train_test
 from b_i_visual_feature_extraction import hog_feature
 from b_ii_feature_exploration import create_feature_df
@@ -48,7 +49,8 @@ def ada_boost(features, labels, name):
     ax.set_title(f'{name}: Training Time')
     plt.xticks(ind,('DecisionTree', 'SVM'))
     ax.legend()
-    image_path = f"../graphs/{name}_ada_training_time"
+    image_path = f"../graphs/ada_boost/{name}_training_time"
+    ensure_folder(os.path.dirname(image_path))
     fig.savefig(image_path)
     print(f"saved image: {image_path}")
 
@@ -61,7 +63,7 @@ def ada_boost(features, labels, name):
     ax.set_title(f'{name}: Average Accuracy')
     plt.xticks(ind,('DecisionTree', 'SVM'))
     ax.legend()
-    image_path = f"../graphs/{name}_ada_training_time"
+    image_path = f"../graphs/ada_boost/{name}_accuray"
     fig.savefig(image_path)
     print(f"saved image: {image_path}")
 
