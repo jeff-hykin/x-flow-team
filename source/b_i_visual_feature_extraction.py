@@ -53,11 +53,11 @@ def get_gabor_train_test(options={}, preprocess_options={}):
     # canny
     transformation = lambda each: canny_feature(each)
     train_features['images'] = train_features['images'].transform(transformation)
-    # test_features['images']  = test_features['images'].transform(transformation)
+    test_features['images']  = test_features['images'].transform(transformation)
     
     # give every image-feature its own column (a lot of columns)
     train_features = split_into_columns(train_features, "images")
-    # test_features  = split_into_columns(test_features,  "images")
+    test_features  = split_into_columns(test_features,  "images")
     return train_features, train_labels, test_features
 
 def hog_feature(image, **options):
@@ -92,13 +92,7 @@ def visualize_hog(original_image, hog_image):
     plt.show()
 
 def canny_feature(image):
-    print('image.shape = ', image.shape)
-    if image.shape == (250, ):
-        print('type(image) = ', type(image))
-        print('image = ', image)
-    
     feature_results = np.copy(skimage.feature.canny(image, sigma=3))
-    print('feature_results.shape = ', feature_results.shape)
     values = []
     for each_row in feature_results:
         ones = len([ 1 for each_value in each_row if each_value ])
