@@ -258,5 +258,5 @@ if __name__ == "__main__":
     
     # compute which features are the most helpful
     feature_counts = [ 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 20, 23, 25, 27, 35, 40 ]
-    hog_results    = auto_cache(run_filter_vs_wrapper_competition, train_features_hog,   train_labels_hog,   feature_counts)
     gabor_results  = auto_cache(run_filter_vs_wrapper_competition, train_features_gabor, train_labels_gabor, feature_counts)
+    hog_results    = auto_cache(run_filter_vs_wrapper_competition, train_features_hog,   train_labels_hog,   feature_counts)
